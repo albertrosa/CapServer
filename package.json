@@ -4,7 +4,8 @@
   "description": "Identity Server for Beef",
   "main": "app.js",
   "scripts": {
-    "test": "test"
+    "test": "test",
+    "build": "echo 'built'"
   },
   "author": "Albert Rosa",
   "license": "ISC",
