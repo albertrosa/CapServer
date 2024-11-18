@@ -45,13 +45,10 @@ app.use(cors());
 app.get('/', (req, res)=> {
     res.send("Hello from Identity Server");
 });
-
 app.get('/auth/twitter', passport.authenticate('twitter'));
-app.get('/twitter/callback', {failureRedirect: "/login"}, function (req, res) {
-    
+app.get('/twitter/callback',function (req, res) {
     res.redirect("/");
 });
-
 app.get('/keys', (req, res) => {
     const dt = 
 
