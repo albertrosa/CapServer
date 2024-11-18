@@ -23,7 +23,7 @@ app.use(session({
 passport.use(
     new TwitterStratergy({
         consumerKey: process.env.CONSUMER_API_KEY,
-        consumerSecret: process.env.CONSUMER_API_SECRET,
+        consumerSecret: process.env.CONSUME_API_SECRET,
         callbackURL:'http://captainbeef.render.com/twitter/callback'
     },
     function(token, tokenSecret, profile, cb) {
