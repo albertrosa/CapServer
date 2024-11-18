@@ -22,8 +22,8 @@ app.use(session({
 
 passport.use(
     new TwitterStratergy({
-        consumerKey: process.env.X_ACCOUNT,
-        consumerSecret: process.env.X_SECRET,
+        consumerKey: process.env.CONSUMER_API_KEY,
+        consumerSecret: process.env.CONSUMER_API_SECRET,
         callbackURL:'http://captainbeef.render.com/twitter/callback'
     },
     function(token, tokenSecret, profile, cb) {
@@ -51,6 +51,14 @@ app.get('/auth/twitter', passport.authenticate('twitter'));
 //     res.redirect("/");
 // });
 
+app.get('/keys', (req, res) => {
+    const dt = 
+
+
+
+
+    res.send("");
+})
 
 
 app.listen(8080, () => {
