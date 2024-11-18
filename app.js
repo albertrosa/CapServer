@@ -47,9 +47,10 @@ app.get('/', (req, res)=> {
 });
 
 app.get('/auth/twitter', passport.authenticate('twitter'));
-// app.get('/auth/twitter/callback', {failureRedirect: "/login"}, function (req, res) {
-//     res.redirect("/");
-// });
+app.get('/twitter/callback', {failureRedirect: "/login"}, function (req, res) {
+    
+    res.redirect("/");
+});
 
 app.get('/keys', (req, res) => {
     const dt = 
