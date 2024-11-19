@@ -26,7 +26,7 @@ app.use(cors());
 const authClient = new auth.OAuth2User({
   client_id: process.env.X_ACCOUNT,
   client_secret: process.env.X_SECRET,
-  callback: "https://captainbeef.onrender.com/twitter/callback",
+  callback: "https://capserver-3eyf.onrender.com/twitter/callback",
   scopes: ["tweet.read", "users.read"],
 });
 
@@ -119,7 +119,7 @@ app.post("/followers", async (req, res) => {
 
 app.use(
   cors(
-    // {origin: "https://capserver-3eyf.onrender.com",// "https://localhost:8080",}
+     {origin: '*' } // "https://capserver-3eyf.onrender.com",// "https://localhost:8080",}
     )
 );
 
