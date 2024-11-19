@@ -39,8 +39,8 @@ app.get("/twitter/callback", async function (req, res) {
     const { code, state } = req.query;    
     accessToken = (await authClient.requestAccessToken(code)).token
       .access_token;
-    console.log("AccessToken: " + JSON.stringify(accessToken));
-    console.log(req.user);
+    // console.log("AccessToken: " + JSON.stringify(accessToken));
+    // console.log(req.user);
 
     const userResponse = await axios.get("https://api.twitter.com/2/users/me", {
         headers: {
@@ -49,9 +49,6 @@ app.get("/twitter/callback", async function (req, res) {
         },
       });
     
-    
-    // res.redirect('https://captainbeef.onrender.com/twitter/callback?t='.concat(accessToken));
-
     res.send(`
       <html>
       <body>
@@ -84,12 +81,7 @@ app.get("/twitter/login", async function (req, res) {
   res.redirect(authUrl);
 });
 
-app.get("/tweets", async function (req, res) {
-  const tweets = await client.tweets.findTweetById("20");
-  res.send(tweets.data);
-});
-
-app.get("/revoke", async function (req, res) {
+app.get("/twitter/revoke", async function (req, res) {
   try {
     const response = await authClient.revokeAccessToken();
     res.send(response);
@@ -98,35 +90,6 @@ app.get("/revoke", async function (req, res) {
   }
 });
 
-app.post("/followers", async (req, res) => {
-  try {
-    // const { accessToken } = req.body;
-
-    const userResponse = await axios.get("https://api.twitter.com/2/users/me", {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-    const userId = userResponse.data.data.id;
-    // console.log("User ID: " + userId);
-
-    // const response = await axios.get(
-    //   `https://api.twitter.com/2/users/${userId}/followers`,
-    //   {
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       Authorization: `Bearer ${accessToken}`,
-    //     },
-    //   }
-    // );
-
-    res.send(userResponse.data.data);
-  } catch (error) {
-    console.error("Error fetching followers:", error);
-    res.status(500).send("Failed to fetch followers");
-  }
-});
 
 app.use(
   cors(
