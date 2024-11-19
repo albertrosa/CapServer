@@ -41,6 +41,13 @@ app.get("/twitter/callback", async function (req, res) {
       .access_token;
     console.log("AccessToken: " + JSON.stringify(accessToken));
     console.log(req.user);
+
+    const userResponse = await axios.get("https://api.twitter.com/2/users/me", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
     
     
     // res.redirect('https://captainbeef.onrender.com/twitter/callback?t='.concat(accessToken));
@@ -53,7 +60,7 @@ app.get("/twitter/callback", async function (req, res) {
           // Pass the access token and status to the parent window
           window.opener.postMessage(
           { token: ${JSON.stringify(accessToken)}, 
-           user: ${JSON.stringify(req.user)},
+           user: ${JSON.stringify(userResponse.data)},
            status: "Login successful" }, "*");
 
           // Close the window after a delay
