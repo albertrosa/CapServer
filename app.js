@@ -118,9 +118,9 @@ app.post("/followers", async (req, res) => {
 });
 
 app.use(
-  cors({
-    origin: "https://capserver-3eyf.onrender.com",// "https://localhost:8080",
-  })
+  cors(
+    // {origin: "https://capserver-3eyf.onrender.com",// "https://localhost:8080",}
+    )
 );
 
 app.listen(8080, () => {
