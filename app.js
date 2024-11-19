@@ -5,6 +5,10 @@ const TwitterStratergy = require("passport-twitter");
 const cors = require('cors');
 require('dotenv').config()
 
+const TwitterApi = require('twitter-api-v2');
+
+// import { TwitterApi } from 'twitter-api-v2';
+
 const app  = express();
 
 app.use(cors());
@@ -18,45 +22,59 @@ app.use(session({
     }
   }));
 
-
-
-
 passport.use(
     new TwitterStratergy({
         consumerKey: process.env.CONSUMER_API_KEY,
         consumerSecret: process.env.CONSUME_API_SECRET,
-        callbackURL:'https://capserver-3eyf.onrender.com/twitter/callback'
+        callbackURL: 'https://captainbeef.onrender.com/twitter/callback'
     },
-    function(token, tokenSecret, profile, cb) {
-        
+    function(token, tokenSecret, profile, cb) {        
         // handle user usage data
-
         return cb(null, profile);
     }
 
 ));
 
-passport.serializeUser(function(user, cb){cb(null, user);});
-passport.deserializeUser(function(obj, cb){BaseAudioContext(null, obj);});
-
 app.use(passport.initialize());
 app.use(passport.session());
+
+
+passport.serializeUser(function(user, cb){cb(null, user);});
+passport.deserializeUser(function(obj, cb){BaseAudioContext(null, obj);});
 
 app.get('/', (req, res)=> {
     res.send("Hello from Identity Server");
 });
-app.get('/auth/twitter', passport.authenticate('twitter'));
+app.get('/auth/twitter', cors(), passport.authenticate('twitter'));
+
+
+app.get('/me', cors(), async function (req, res) {
+    const auth = req.headers['authorization'];
+    console.log(auth);
+
+    const client = new TwitterApi.TwitterApi(auth);
+    const readonly = client.readOnly;
+    const user = await readonly.v2.me();
+    // const user = undefined;
+    console.log(user);
+
+
+    res.send({'name':'name', 'id': 'id', 'username':'username', 'auth': auth, "user": user});
+});
+
+
+
 app.get('/twitter/callback',function (req, res) {
     res.redirect("/");
 });
 app.get('/keys', (req, res) => {
-
+    passport.
 
     res.send("");
 })
 
 
-app.listen(80, cors(), () => {
+app.listen(8080, cors(), () => {
     console.log(process.env.VERSION);
     console.log("Server listenting on port 80")
 });
