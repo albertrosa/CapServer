@@ -52,10 +52,10 @@ app.get('/me', cors(), async function (req, res) {
     const auth = req.headers['authorization'];
     console.log(auth);
 
-    const client = new TwitterApi.TwitterApi(auth);
-    const readonly = client.readOnly;
-    const user = await readonly.v2.me();
-    // const user = undefined;
+    // const client = new TwitterApi.TwitterApi(auth);
+    // const readonly = client.readOnly;
+    // const user = await readonly.v2.me();
+    const user = undefined;
     console.log(user);
 
 
