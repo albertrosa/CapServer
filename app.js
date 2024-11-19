@@ -40,25 +40,29 @@ app.get("/twitter/callback", async function (req, res) {
     accessToken = (await authClient.requestAccessToken(code)).token
       .access_token;
     console.log("AccessToken: " + JSON.stringify(accessToken));
-    res.redirect('https://captainbeef.onrender.com/twitter/callback?t='.concat(accessToken));
+    console.log(req.user);
+    
+    
+    // res.redirect('https://captainbeef.onrender.com/twitter/callback?t='.concat(accessToken));
 
-    // res.send(`
-    //   <html>
-    //   <body>
-    //     <p>You have been authenticated with this platform. You can close the window now.</p>
-    //     <script>
-    //       // Pass the access token and status to the parent window
-    //       window.opener.postMessage({ token: ${JSON.stringify(
-    //         accessToken
-    //       )}, status: "Login successful" }, "*");
+    res.send(`
+      <html>
+      <body>
+        <p>You have been authenticated with this platform. You can close the window now.</p>
+        <script>
+          // Pass the access token and status to the parent window
+          window.opener.postMessage(
+          { token: ${JSON.stringify(accessToken)}, 
+           user: ${JSON.stringify(req.user)},
+           status: "Login successful" }, "*");
 
-    //       // Close the window after a delay
-    //       setTimeout(() => {
-    //         window.close();
-    //       }, 3000); // 3 seconds delay
-    //     </script>
-    //   </body>
-    //   </html>
+          // Close the window after a delay
+          setTimeout(() => {
+            window.close();
+          }, 3000); // 3 seconds delay
+        </script>
+      </body>
+      </html>
     // `);
   } catch (error) {
     console.log(error);
