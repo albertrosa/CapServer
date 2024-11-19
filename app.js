@@ -10,6 +10,7 @@ const TwitterApi = require('twitter-api-v2');
 // import { TwitterApi } from 'twitter-api-v2';
 
 const app  = express();
+const PORT = process.env.PORT ||8080;
 
 app.use(cors());
 app.use(session({
@@ -52,10 +53,10 @@ app.get('/me', cors(), async function (req, res) {
     const auth = req.headers['authorization'];
     console.log(auth);
 
-    // const client = new TwitterApi.TwitterApi(auth);
-    // const readonly = client.readOnly;
-    // const user = await readonly.v2.me();
-    const user = undefined;
+    const client = new TwitterApi.TwitterApi(auth);
+    const readonly = client.readOnly;
+    const user = await readonly.v2.me();
+    // const user = undefined;
     console.log(user);
 
 
@@ -74,7 +75,7 @@ app.get('/keys', (req, res) => {
 })
 
 
-app.listen(80, cors(), () => {
+app.listen(PORT, cors(), () => {
     console.log(process.env.VERSION);
-    console.log("Server listenting on port 80")
+    console.log("Server listenting on port " + PORT)
 });
