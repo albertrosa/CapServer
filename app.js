@@ -74,7 +74,7 @@ app.get('/keys', (req, res) => {
 })
 
 
-app.listen(8080, cors(), () => {
+app.listen(80, cors(), () => {
     console.log(process.env.VERSION);
     console.log("Server listenting on port 80")
 });
