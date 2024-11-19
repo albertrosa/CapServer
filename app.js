@@ -7,6 +7,7 @@ require('dotenv').config()
 
 const app  = express();
 
+app.use(cors());
 app.use(session({
     secret: 'asdfaeaeq25q0wedsvaf4-ta4ta32ocyn307rtap4t', // Replace with a strong secret key
     resave: false,
@@ -40,7 +41,6 @@ passport.deserializeUser(function(obj, cb){BaseAudioContext(null, obj);});
 
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(cors());
 
 app.get('/', (req, res)=> {
     res.send("Hello from Identity Server");
@@ -50,16 +50,13 @@ app.get('/twitter/callback',function (req, res) {
     res.redirect("/");
 });
 app.get('/keys', (req, res) => {
-    const dt = 
-
-
 
 
     res.send("");
 })
 
 
-app.listen(8080, () => {
+app.listen(80, cors(), () => {
     console.log(process.env.VERSION);
-    console.log("Server listenting on port 8080")
+    console.log("Server listenting on port 80")
 });
