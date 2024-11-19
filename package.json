@@ -17,6 +17,7 @@
     "express-session": "^1.18.1",
     "passport": "^0.7.0",
     "passport-twitter": "^1.0.4",
+    "twitter-api-sdk": "^1.2.1",
     "twitter-api-v2": "^1.18.2"
   }
 }
