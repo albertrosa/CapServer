@@ -90,6 +90,10 @@ app.get("/twitter/revoke", async function (req, res) {
   }
 });
 
+app.get('/health', function(req, res) {
+  res.send(`OK`);
+});
+
 
 app.use(
   cors(
