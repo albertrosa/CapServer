@@ -56,7 +56,6 @@ app.get("/twitter/callback", async function (req, res) {
 
     const tmp = {
       t: accessToken,
-      a: userResponse.data,
       n: userResponse.data.data.name,
       u: userResponse.data.data.username,
       i: userResponse.data.data.id,
@@ -67,7 +66,7 @@ app.get("/twitter/callback", async function (req, res) {
       <body>
         <p>You have been authenticated with this platform. You can close the window now.</p>
         ${JSON.stringify(tmp)}
-        <a href="https://capbeef.onrender.com/t/?i=${JSON.stringify(tmp)}">Tap if not closed<a/>
+        <a href="https://capbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}">Tap if not closed<a/>
         <script>
           // Pass the access token and status to the parent window
           window.opener.postMessage(
