@@ -60,6 +60,13 @@ app.get("/twitter/callback", async function (req, res) {
       u: userResponse.data.data.username,
       i: userResponse.data.data.id,
     }
+
+
+    const client2 = new Client(accessToken);
+    const followersResponse = await client2.users.usersIdFollowers({
+      "user.fields": ["username", "verified"]
+    })
+
     
     res.send(`
       <html>
@@ -67,6 +74,9 @@ app.get("/twitter/callback", async function (req, res) {
         <p>You have been authenticated with this platform. You can close the window now.</p>
         ${JSON.stringify(tmp)}
         <a href="https://capbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}">Tap if not closed<a/>
+        <p>
+        ${JSON.stringify(followersResponse)}
+        </p>
         <script>
           // Pass the access token and status to the parent window
           window.opener.postMessage(
