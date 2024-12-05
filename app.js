@@ -69,6 +69,7 @@ app.get("/twitter/callback", async function (req, res) {
       <html>
       <body>
         <p>You have been authenticated with this platform. You can close the window now.</p>
+        ${JSON.stringify(tmp)}
         <a href="https://capbeef.onrender.com/t/?i=${JSON.stringify(tmp)}">Tap if not closed<a/>
         <script>
           // Pass the access token and status to the parent window
