@@ -73,11 +73,10 @@ app.get("/twitter/callback", async function (req, res) {
     res.send(`
       <html>
       <body>
-        <p>You have been authenticated with this platform. You can close the window now.</p>
-        ${JSON.stringify(tmp)}
-        <a href="https://capbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}">Tap if not closed<a/>
+        <p>You have been authenticated with this platform. You can close the window now.</p>        
+          <a href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}">Tap if not closed<a/>
         <p>
-        ${JSON.stringify(followersResponse)}
+        
         </p>
         <script>
           // Pass the access token and status to the parent window
@@ -87,7 +86,7 @@ app.get("/twitter/callback", async function (req, res) {
             user: ${JSON.stringify(userResponse.data)},
             status: "Login successful" }, "*");
           } catch(err) {
-            window.location.href="https://capbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+            window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
           }
 
           // Close the window after a delay
@@ -95,7 +94,7 @@ app.get("/twitter/callback", async function (req, res) {
             try {
              window.close();
             } catch(err) {
-              window.location.href="https://capbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+              window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
             }
           }, 3000); // 3 seconds delay
         </script>
