@@ -12,6 +12,7 @@
 
 const { Client, auth } = require("twitter-api-sdk");
 const express = require("express");
+const isMobile = require('is-mobile');
 const axios = require("axios");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -69,41 +70,62 @@ app.get("/twitter/callback", async function (req, res) {
       console.log("Expected Error when doing user look up for free :-)")
     }
 
-    
-    res.send(`
-      <html>
-      <body>
-        <p>You have been authenticated with this platform. You can close the window now.</p>        
-          <a href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}">Tap if not closed<a/>
-        <p>
-        
-        </p>
-        <script>
-          // Pass the access token and status to the parent window
-          try {
-            window.opener.postMessage(
-            { token: ${JSON.stringify(accessToken)}, 
-            user: ${JSON.stringify(userResponse.data)},
-            status: "Login successful" }, "*");
-            
-            window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
-          } catch(err) {
-            window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
-          }
+    if (isMobile(req.headers['user-agent'])) {
 
-          // Close the window after a delay
-          setTimeout(() => {
+      
+      res.send(`
+        <html>
+        <body>
+          <p>Redirection to App</p>        
+          <h1><a href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}">Not Redirected<a/></h1>
+          
+          <script>
+            // Pass the access token and status to the parent window
+            window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+            
+
+            // Close the window after a delay
+            setTimeout(() => {
+              try {
+                window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";            
+              } catch(err) {
+                
+              }
+            }, 3000); // 3 seconds delay
+          </script>
+        </body>
+        </html> `);
+    } else {
+
+      
+      res.send(`
+        <html>
+        <body>
+          <p>You have been authenticated with this platform. You can close the window now.</p>        
+          <script>
+            // Pass the access token and status to the parent window
             try {
-              window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
-              window.close();
+              window.opener.postMessage(
+              { token: ${JSON.stringify(accessToken)}, 
+              user: ${JSON.stringify(userResponse.data)},
+              status: "Login successful" }, "*");
             } catch(err) {
               window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
             }
-          }, 3000); // 3 seconds delay
-        </script>
-      </body>
-      </html>
-    // `);
+
+            // Close the window after a delay
+            setTimeout(() => {
+              try {                
+                window.close();
+              } catch(err) {
+                
+              }
+            }, 3000); // 3 seconds delay
+          </script>
+        </body>
+        </html>
+       `);
+  }
   } catch (error) {
     console.log(error);
   }

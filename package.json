@@ -15,6 +15,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "express-session": "^1.18.1",
+    "is-mobile": "^5.0.0",
     "passport": "^0.7.0",
     "passport-twitter": "^1.0.4",
     "twitter-api-sdk": "^1.2.1",
