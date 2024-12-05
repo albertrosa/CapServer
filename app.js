@@ -41,8 +41,6 @@ app.get("/twitter/callback", async function (req, res) {
     const { code, state } = req.query;    
     accessToken = (await authClient.requestAccessToken(code)).token
       .access_token;
-    // console.log("AccessToken: " + JSON.stringify(accessToken));
-    // console.log(req.user);
 
     const userResponse = await axios.get("https://api.twitter.com/2/users/me", {
         headers: {
@@ -51,9 +49,6 @@ app.get("/twitter/callback", async function (req, res) {
         },
       });
 
-    // const token = JSON.stringify(accessToken);
-    // const user = JSON.stringify(userResponse.data);
-
     const tmp = {
       t: accessToken,
       n: userResponse.data.data.name,
@@ -61,12 +56,18 @@ app.get("/twitter/callback", async function (req, res) {
       i: userResponse.data.data.id,
     }
 
-    const followersResponse = await axios.get("https://api.twitter.com/2/users/"+tmp.i+"/followers?user.fields=username,verified", {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    let followersResponse;
+
+    try {
+      followersResponse = await axios.get("https://api.twitter.com/2/users/"+tmp.i+"/followers?user.fields=username,verified", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+    } catch(err) {
+      console.log("Expected Error when doing user look up for free :-)")
+    }
 
     
     res.send(`
