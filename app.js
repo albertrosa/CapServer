@@ -115,7 +115,7 @@ app.get("/twitter/callback", async function (req, res) {
 
             try {
               window.close();
-            }catch() {
+            } catch(err) {
               window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
             }
 
@@ -127,6 +127,7 @@ app.get("/twitter/callback", async function (req, res) {
                 window.close();
               } catch(err) {
                 
+            window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
               }
             }, 3000); // 3 seconds delay
           </script>
