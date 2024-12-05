@@ -57,18 +57,17 @@ app.get("/twitter/callback", async function (req, res) {
       i: userResponse.data.data.id,
     }
 
-    let followersResponse;
-
-    try {
-      followersResponse = await axios.get("https://api.twitter.com/2/users/"+tmp.i+"/followers?user.fields=username,verified", {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-    } catch(err) {
-      console.log("Expected Error when doing user look up for free :-)")
-    }
+    // let followersResponse;
+    // try {
+    //   followersResponse = await axios.get("https://api.twitter.com/2/users/"+tmp.i+"/followers?user.fields=username,verified", {
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       Authorization: `Bearer ${accessToken}`,
+    //     },
+    //   });
+    // } catch(err) {
+    //   console.log("Expected Error when doing user look up for free :-)")
+    // }
 
     if (isMobile(req.headers['user-agent'])) {
 
