@@ -18,10 +18,9 @@ const cors = require("cors");
 let accessToken = "";
 dotenv.config();
 
-console.log(process.env.X_ACCOUNT);
-
 const app = express();
 app.use(cors());
+
 
 const authClient = new auth.OAuth2User({
   client_id: process.env.X_ACCOUNT,
@@ -29,6 +28,9 @@ const authClient = new auth.OAuth2User({
   callback: "https://capserver-3eyf.onrender.com/twitter/callback",
   scopes: ["tweet.read", "users.read"],
 });
+
+
+const dappTwitterUrl = "https://capbeef.onrender.com/t/";
 
 const client = new Client(authClient);
 
@@ -48,11 +50,26 @@ app.get("/twitter/callback", async function (req, res) {
           Authorization: `Bearer ${accessToken}`,
         },
       });
+
+    // const token = JSON.stringify(accessToken);
+    // const user = JSON.stringify(userResponse.data);
+
+    const tmp = {
+      t: accessToken,
+      n: userResponse.data.users.data.username,
+      i: userResponse.data.users.data.id
+    }
+
+
+    setToken(event.data.token);
+    setName(event.data.user.data.username);
+    setId(event.data.user.data.id);      
     
     res.send(`
       <html>
       <body>
         <p>You have been authenticated with this platform. You can close the window now.</p>
+        <a href="https://capbeef.onrender.com/t/?i=${JSON.stringify(tmp)}">Tap if not closed<a/>
         <script>
           // Pass the access token and status to the parent window
           window.opener.postMessage(
@@ -102,5 +119,5 @@ app.use(
 );
 
 app.listen(8080, () => {
-  console.log(`Go here to login: http://localhost:5000/login`);
+  console.log(`Go here to login: http://localhost:8080/twitter/login`);
 });
