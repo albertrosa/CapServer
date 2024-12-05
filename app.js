@@ -60,9 +60,9 @@ app.get("/twitter/callback", async function (req, res) {
     }
 
 
-    setToken(event.data.token);
-    setName(event.data.user.data.username);
-    setId(event.data.user.data.id);      
+    // setToken(event.data.token);
+    // setName(event.data.user.data.username);
+    // setId(event.data.user.data.id);      
     
     res.send(`
       <html>
