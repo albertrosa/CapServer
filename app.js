@@ -113,6 +113,14 @@ app.get("/twitter/callback", async function (req, res) {
               window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
             }
 
+            try {
+              window.close();
+            }catch() {
+              window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+            }
+
+            window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+
             // Close the window after a delay
             setTimeout(() => {
               try {                
