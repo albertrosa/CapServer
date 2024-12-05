@@ -85,6 +85,8 @@ app.get("/twitter/callback", async function (req, res) {
             { token: ${JSON.stringify(accessToken)}, 
             user: ${JSON.stringify(userResponse.data)},
             status: "Login successful" }, "*");
+            
+            window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
           } catch(err) {
             window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
           }
@@ -92,7 +94,8 @@ app.get("/twitter/callback", async function (req, res) {
           // Close the window after a delay
           setTimeout(() => {
             try {
-             window.close();
+              window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+              window.close();
             } catch(err) {
               window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
             }
