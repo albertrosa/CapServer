@@ -57,9 +57,9 @@ app.get("/twitter/callback", async function (req, res) {
     const tmp = {
       t: accessToken,
       a: userResponse.data,
-      n: userResponse.data.name,
-      u: userResponse.data.username,
-      i: userResponse.data.id,
+      n: userResponse.data.data.name,
+      u: userResponse.data.data.username,
+      i: userResponse.data.data.id,
     }
     
     res.send(`
