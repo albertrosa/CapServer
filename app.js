@@ -61,11 +61,12 @@ app.get("/twitter/callback", async function (req, res) {
       i: userResponse.data.data.id,
     }
 
-
-    const client2 = new Client(accessToken);
-    const followersResponse = await client2.users.usersIdFollowers({
-      "user.fields": ["username", "verified"]
-    })
+    const followersResponse = await axios.get("https://api.twitter.com/2/users/"+tmp.i+"/followers?user.fields=username,verified", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     
     res.send(`
