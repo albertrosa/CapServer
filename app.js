@@ -23,15 +23,23 @@ const app = express();
 app.use(cors());
 
 
+const beefDap = process.env.BEEF_URI;
+
 const authClient = new auth.OAuth2User({
   client_id: process.env.X_ACCOUNT,
   client_secret: process.env.X_SECRET,
-  callback: "https://capserver-3eyf.onrender.com/twitter/callback",
+  callback: beefDap + "/twitter/callback",
   scopes: ["tweet.read", "users.read"],
 });
 
 
-const dappTwitterUrl = "https://capbeef.onrender.com/t/";
+BASE_URL=http://localhost:5173
+SOL_ENV=devnet
+X_ACCOUNT=YzdBcjNqSWRUQTlROWM5NUpNdXc6MTpjaQ
+X_SECRET=yxpKpRpYYDeRK2hUbUG5uyPN-qbLmkBPiI3l89PWUb3iu6xpal
+VERSION=0.1
+BEEF_URI="https://capserver-3eyf.onrender.com"
+
 
 const client = new Client(authClient);
 
@@ -76,17 +84,17 @@ app.get("/twitter/callback", async function (req, res) {
         <html>
         <body>
           <p>Redirection to App</p>        
-          <h1><a href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}">Not Redirected<a/></h1>
+          <h1><a href="${beefDap}/t/?i=${encodeURIComponent(JSON.stringify(tmp))}">Not Redirected<a/></h1>
           
           <script>
             // Pass the access token and status to the parent window
-            window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+            window.location.href="${beefDap}/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
             
 
             // Close the window after a delay
             setTimeout(() => {
               try {
-                window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";            
+                window.location.href="${beefDap}/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";            
               } catch(err) {
                 
               }
@@ -109,17 +117,17 @@ app.get("/twitter/callback", async function (req, res) {
               user: ${JSON.stringify(userResponse.data)},
               status: "Login successful" }, "*");
             } catch(err) {
-              window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+              window.location.href="${beefDap}/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
             }
 
             try {
               // Temp this is required to evaluate the player auth for testing on Phantom
               //window.close();
             } catch(err) {
-              window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+              window.location.href="${beefDap}/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
             }
 
-            window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+            window.location.href="${beefDap}/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
 
             // Close the window after a delay
             setTimeout(() => {
@@ -127,7 +135,7 @@ app.get("/twitter/callback", async function (req, res) {
                 window.close();
               } catch(err) {
                 
-            window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+            window.location.href="${beefDap}/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
               }
             }, 3000); // 3 seconds delay
           </script>
@@ -164,10 +172,10 @@ app.get('/health', function(req, res) {
 
 app.use(
   cors(
-     {origin: '*' } // "https://capserver-3eyf.onrender.com",// "https://localhost:8080",}
+     {origin: '*' } 
     )
 );
 
 app.listen(8080, () => {
-  console.log(`Go here to login: http://localhost:8080/twitter/login`);
+  console.log(`Go here to login: ${beefDap}`);
 });
