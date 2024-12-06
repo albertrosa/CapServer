@@ -33,14 +33,6 @@ const authClient = new auth.OAuth2User({
 });
 
 
-BASE_URL=http://localhost:5173
-SOL_ENV=devnet
-X_ACCOUNT=YzdBcjNqSWRUQTlROWM5NUpNdXc6MTpjaQ
-X_SECRET=yxpKpRpYYDeRK2hUbUG5uyPN-qbLmkBPiI3l89PWUb3iu6xpal
-VERSION=0.1
-BEEF_URI="https://capserver-3eyf.onrender.com"
-
-
 const client = new Client(authClient);
 
 const STATE = "my-state";
