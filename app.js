@@ -113,7 +113,8 @@ app.get("/twitter/callback", async function (req, res) {
             }
 
             try {
-              window.close();
+              // Temp this is required to evaluate the player auth for testing on Phantom
+              //window.close();
             } catch(err) {
               window.location.href="https://captainbeef.onrender.com/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
             }
