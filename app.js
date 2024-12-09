@@ -117,7 +117,7 @@ app.get("/twitter/callback", async function (req, res) {
 
             try {
               // Temp this is required to evaluate the player auth for testing on Phantom
-              //window.close();
+              window.close();
             } catch(err) {
               window.location.href="${beefDap}/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
             }
