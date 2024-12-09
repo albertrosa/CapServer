@@ -23,7 +23,7 @@ const app = express();
 app.use(cors());
 
 
-const beefDap = process.env.BEEF_URI;
+const beefDap = process.env.BASE_URL;
 
 const authClient = new auth.OAuth2User({
   client_id: process.env.X_ACCOUNT,
@@ -31,6 +31,9 @@ const authClient = new auth.OAuth2User({
   callback: beefDap + "/twitter/callback",
   scopes: ["tweet.read", "users.read"],
 });
+
+
+
 
 
 const client = new Client(authClient);
