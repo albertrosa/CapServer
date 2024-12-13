@@ -32,9 +32,8 @@ const authClient = new auth.OAuth2User({
   scopes: ["tweet.read", "users.read"],
 });
 
-
-
-
+const max = 100;
+const min = 1;
 
 const client = new Client(authClient);
 
@@ -58,6 +57,7 @@ app.get("/twitter/callback", async function (req, res) {
       n: userResponse.data.data.name,
       u: userResponse.data.data.username,
       i: userResponse.data.data.id,
+      f: Math.ceil(Math.random() * (max - min) + min)
     }
 
     // let followersResponse;
