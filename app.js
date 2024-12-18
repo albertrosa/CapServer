@@ -16,11 +16,21 @@ const isMobile = require('is-mobile');
 const axios = require("axios");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const session = require('express-session');
+
+
 let accessToken = "";
 dotenv.config();
 
 const app = express();
 app.use(cors());
+
+app.use(session({
+  secret: process.env.session,
+  resave: false,
+  saveUninitialized: false, 
+  cookie: {secured: process.env.session_secured}
+}))
 
 
 const beefDap = process.env.BEEF_URI;
@@ -41,23 +51,44 @@ const STATE = "my-state";
 
 app.get("/twitter/callback", async function (req, res) {
   try {
-    const { code, state } = req.query;    
-    accessToken = (await authClient.requestAccessToken(code)).token
-      .access_token;
+    let tmp;
+    if (req.session.userId) {
+      tmp = {
+        t: req.session.at,
+        n: req.session.name,
+        u: req.session.username,
+        i: req.session.xId,
+        f: req.session.xFollowers
+      }
+      // res.send(JSON.stringify(tmp));
+    } else {
+      // fresh login
+      const { code, state } = req.query;    
+      accessToken = (await authClient.requestAccessToken(code)).token
+        .access_token;
 
-    const userResponse = await axios.get("https://api.twitter.com/2/users/me", {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const userResponse = await axios.get("https://api.twitter.com/2/users/me", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
 
-    const tmp = {
-      t: accessToken,
-      n: userResponse.data.data.name,
-      u: userResponse.data.data.username,
-      i: userResponse.data.data.id,
-      f: Math.ceil(Math.random() * (max - min) + min)
+      tmp = {
+        t: accessToken,
+        n: userResponse.data.data.name,
+        u: userResponse.data.data.username,
+        i: userResponse.data.data.id,
+        f: Math.ceil(Math.random() * (max - min) + min)
+      }
+
+      req.session.userId =  Math.ceil(Math.random() * 100)
+      req.session.name = tmp.n;
+      req.session.username = tmp.u;
+      req.session.at = accessToken;
+      req.session.xUsername = tmp.u;
+      req.session.xId = tmp.i;
+      req.session.xFollowers = tmp.f;
     }
 
     // let followersResponse;
@@ -109,7 +140,7 @@ app.get("/twitter/callback", async function (req, res) {
             try {
               window.opener.postMessage(
               { token: ${JSON.stringify(accessToken)}, 
-              user: ${JSON.stringify(userResponse.data)},
+              user: ${JSON.stringify(tmp)},
               status: "Login successful" }, "*");
             } catch(err) {
               window.location.href="${beefDap}/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
@@ -162,6 +193,49 @@ app.get("/twitter/revoke", async function (req, res) {
 
 app.get('/health', function(req, res) {
   res.send(`OK`);
+});
+
+app.get("/login", async function(req, res){
+  req.session.userId =  Math.ceil(Math.random() * 100)
+  req.session.name = 'not me';
+  req.session.username = '@not_me';
+  req.session.at = 'token';
+  req.session.xUsername = 'XusName';
+  req.session.xId = '123213';
+  req.session.xFollowers = Math.ceil(Math.random() * (max - min) + min);
+  res.send('OK');
+});
+
+app.get('/status', async function (req, res) {
+  
+  if (req.session.userId) {
+    const tmp = {
+      t: req.session.at,
+      n: req.session.name,
+      u: req.session.username,
+      i: req.session.xId,
+      f: req.session.xFollowers
+    }
+    res.send(JSON.stringify(tmp));
+  } else {
+    res.send("LOGIN");
+  }
+  
+});
+
+app.get('/logout', async function (req, res) {
+  // try {
+  //   await authClient.revokeAccessToken();    
+  // } catch (error) {
+  //   console.log(error);
+  // }
+
+  req.session.destroy((err) => {
+    if (err) {
+      console.error(err);
+    }
+    res.redirect('/status');
+  });
 });
 
 
