@@ -263,8 +263,6 @@ app.get('/twitter/follows', async function (req, res){
               Authorization: `Bearer ${accessToken}`,
             },
           });
-      
-          console.log('Me Response: ', JSON.stringify(searchResponse));
 
           res.send(JSON.stringify(searchResponse));
         } catch(err) {console.log('Me Error', err);}      
