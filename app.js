@@ -257,7 +257,7 @@ app.get('/twitter/follows', async function (req, res){
 
     if (search)  {
       try {
-          const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query="+search, {
+          const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query="+search+"&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name&max_results=100", {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${accessToken}`,
