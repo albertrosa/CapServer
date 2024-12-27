@@ -32,7 +32,6 @@ app.use(session({
   cookie: {secured: process.env.session_secured}
 }))
 
-
 const beefDap = process.env.BEEF_URI;
 
 const authClient = new auth.OAuth2User({
@@ -64,8 +63,7 @@ app.get("/twitter/callback", async function (req, res) {
     } else {
       // fresh login
       const { code, state } = req.query;    
-      accessToken = (await authClient.requestAccessToken(code)).token
-        .access_token;
+      const accessToken = (await authClient.requestAccessToken(code)).token.access_token;
 
       const userResponse = await axios.get("https://api.twitter.com/2/users/me", {
           headers: {
@@ -228,8 +226,7 @@ app.get('/status', async function (req, res) {
     res.send(JSON.stringify(tmp));
   } else {
     res.send("LOGIN");
-  }
-  
+  }  
 });
 
 app.get('/logout', async function (req, res) {
@@ -246,6 +243,93 @@ app.get('/logout', async function (req, res) {
     res.redirect('/status');
   });
 });
+
+app.get('/twitter/follows', async function (req, res){
+  //https://www.postman.com/xapidevelopers/twitter-s-public-workspace/collection/r90eid4/twitter-api-v2
+
+  const { xt, xid, follows, search, followers, tweets } = req.query;    
+
+  if (req.session.userId) {
+  // const accessToken = req.session.at;
+  // const xid =  req.session.xId;
+
+    const accessToken = xt; 
+
+    if (search)  {
+      try {
+          const searchResponse = await axios.get("https://api.twitter.com/2/tweets/search/recent?query="+search, {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+      
+          console.log('Me Response: ', JSON.stringify(searchResponse));
+
+          res.send(JSON.stringify(searchResponse));
+        } catch(err) {console.log('Me Error', err);}      
+    }
+
+    if(follows) {
+
+      try{
+        let pgtoken = null; // this is for pagination purposeses only
+        const followingResponse = await axios.post("https://api.twitter.com/2/users/"+xid+"/following", {id:follows},{
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+      
+        console.log('Followers Response: ',JSON.stringify(followingResponse));
+        res.send(JSON.stringify(followingResponse));
+      } catch(err) {console.log('Make Follow',  err);}
+
+
+      try{
+          let pgtoken = null; // this is for pagination purposeses only
+          const followingResponse = await axios.get("https://api.twitter.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified&max_results=1000&pagination_token="+pgToken, {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+        
+          console.log('Followers Response: ',JSON.stringify(followingResponse));
+          res.send(JSON.stringify(followingResponse));
+      } catch(err) {console.log('Followers Error',  err);}
+    }
+
+    if (followers) {
+
+      try{
+        const followersResponse = await axios.get("https://api.twitter.com/2/users/"+xid+"/followers?user.fields=id,name,profile_image_url,username,verified", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+      
+        console.log('Followers Response: ',JSON.stringify(followersResponse));
+        res.send(JSON.stringify(followersResponse));
+      } catch(err) {console.log('Followers Error',  err);}
+  
+    }
+
+    const tmp = {
+      t: req.session.at,
+      n: req.session.name,
+      u: req.session.username,
+      i: req.session.xId,
+      f: req.session.xFollowers,
+    }
+    res.send(JSON.stringify(tmp));
+  } else {
+    res.send("LOGIN");
+  }  
+});
+
+
 
 
 app.use(
