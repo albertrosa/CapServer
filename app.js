@@ -257,14 +257,14 @@ app.get('/twitter/follows', async function (req, res){
 
     if (search)  {
       try {
-          const searchResponse = await axios.get("https://api.twitter.com/2/tweets/search/recent?query="+search, {
+          const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query="+search, {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${accessToken}`,
             },
           });
 
-          res.send(JSON.stringify(searchResponse));
+          res.send(JSON.stringify(searchResponse.data));
         } catch(err) {console.log('Me Error', err);}      
     }
 
