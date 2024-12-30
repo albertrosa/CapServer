@@ -270,22 +270,8 @@ app.get('/twitter/follows', async function (req, res){
 
     if(follows) {
 
-      // try{
-      //   let pgtoken = null; // this is for pagination purposeses only
-      //   const followingResponse = await axios.post("https://api.twitter.com/2/users/"+xid+"/following", {id:follows},{
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: `Bearer ${accessToken}`,
-      //     },
-      //   });
-      
-      //   console.log('Followers Response: ',JSON.stringify(followingResponse));
-      //   res.send(JSON.stringify(followingResponse));
-      // } catch(err) {console.log('Make Follow',  err);}
-
-
       try{
-          let pgtoken = null; // this is for pagination purposeses only
+          let pgToken = null; // this is for pagination purposeses only
           const followingResponse = await axios.get("https://api.twitter.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified&max_results=1000&pagination_token="+pgToken, {
             headers: {
               "Content-Type": "application/json",
