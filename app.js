@@ -272,7 +272,7 @@ app.get('/twitter/follows', async function (req, res){
 
       try{
           let pgToken = null; // this is for pagination purposeses only
-          const followingResponse = await axios.get("https://api.twitter.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified&max_results=1000&pagination_token="+pgToken, {
+          const followingResponse = await axios.get("https://api.x.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified&max_results=1000&pagination_token="+pgToken, {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${accessToken}`,
