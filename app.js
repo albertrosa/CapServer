@@ -270,18 +270,18 @@ app.get('/twitter/follows', async function (req, res){
 
     if(follows) {
 
-      try{
-        let pgtoken = null; // this is for pagination purposeses only
-        const followingResponse = await axios.post("https://api.twitter.com/2/users/"+xid+"/following", {id:follows},{
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
+      // try{
+      //   let pgtoken = null; // this is for pagination purposeses only
+      //   const followingResponse = await axios.post("https://api.twitter.com/2/users/"+xid+"/following", {id:follows},{
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: `Bearer ${accessToken}`,
+      //     },
+      //   });
       
-        console.log('Followers Response: ',JSON.stringify(followingResponse));
-        res.send(JSON.stringify(followingResponse));
-      } catch(err) {console.log('Make Follow',  err);}
+      //   console.log('Followers Response: ',JSON.stringify(followingResponse));
+      //   res.send(JSON.stringify(followingResponse));
+      // } catch(err) {console.log('Make Follow',  err);}
 
 
       try{
@@ -293,8 +293,7 @@ app.get('/twitter/follows', async function (req, res){
             },
           });
         
-          console.log('Followers Response: ',JSON.stringify(followingResponse));
-          res.send(JSON.stringify(followingResponse));
+          res.send(JSON.stringify(followingResponse.data));
       } catch(err) {console.log('Followers Error',  err);}
     }
 
