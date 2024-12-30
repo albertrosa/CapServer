@@ -249,7 +249,7 @@ app.get('/twitter/follows', async function (req, res){
 
   const { xt, xid, follows, search, followers, tweets } = req.query;    
 
-  if (req.session.userId) {
+  if (req.session.userId || xt) {
   // const accessToken = req.session.at;
   // const xid =  req.session.xId;
 
