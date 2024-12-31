@@ -245,7 +245,6 @@ app.get('/logout', async function (req, res) {
 });
 
 app.get('/twitter/follows', async function (req, res){
-  //https://www.postman.com/xapidevelopers/twitter-s-public-workspace/collection/r90eid4/twitter-api-v2
 
   const { xt, xid, follows, search, followers, tweets } = req.query;    
 
@@ -280,7 +279,7 @@ app.get('/twitter/follows', async function (req, res){
           });
         
           res.send(JSON.stringify(followingResponse.data));
-      } catch(err) {console.log('Followers Error',  err);}
+      } catch(err) {console.log('Followers Error',  err.error);}
     }
 
     if (followers) {
@@ -293,9 +292,9 @@ app.get('/twitter/follows', async function (req, res){
           },
         });
       
-        console.log('Followers Response: ',JSON.stringify(followersResponse));
+        console.log('Followers Response: ',JSON.stringify(followersResponse.data));
         res.send(JSON.stringify(followersResponse));
-      } catch(err) {console.log('Followers Error',  err);}
+      } catch(err) {console.log('Followers Error',  err.error);}
   
     }
 
