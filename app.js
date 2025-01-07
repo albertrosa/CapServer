@@ -45,18 +45,18 @@ const authClient = new auth.OAuth2User({
   scopes: ["tweet.read", "users.read"],
 });
 
-// const auth1Option = {
-//   api_key: process.env.TWITTER_API_KEY || "",
-//   api_secret_key: process.env.TWITTER_API_SECRET_KEY || "",
-//   access_token: process.env.X_ACCESS_TOKEN || "",
-//   access_token_secret: process.env.X_ACCESS_SECRET || "",
-// }
+const auth1Option = {
+  api_key: process.env.TWITTER_API_KEY || "",
+  api_secret_key: process.env.TWITTER_API_SECRET_KEY || "",
+  access_token: process.env.X_ACCESS_TOKEN || "",
+  access_token_secret: process.env.X_ACCESS_SECRET || "",
+}
 
 
 const max = 100;
 const min = 1;
 
-const client = new Client(authClient);
+const client = new Client(process.env.X_BEARER_TOKEN);
 
 const STATE = "my-state";
 
@@ -283,15 +283,20 @@ app.get('/twitter/follows', async function (req, res){
 
       try{
           let pgToken = null; // this is for pagination purposeses only
-          const followingResponse = await axios.get("https://api.x.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified&max_results=1000&pagination_token="+pgToken, {
-            headers: {
-              "Content-Type": "application/json",
-              "User-Agent": 'V2FollowingJS',
-              Authorization: `Bearer ${process.env.X_BEARER_TOKEN}`,
-            },
-          });
+          // const followingResponse = await axios.get("https://api.x.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified&max_results=1000&pagination_token="+pgToken, {
+          //   headers: {
+          //     "Content-Type": "application/json",
+          //     "User-Agent": 'V2FollowingJS',
+          //     Authorization: `Bearer ${process.env.X_BEARER_TOKEN}`,
+          //   },
+          // });
         
-          res.send(JSON.stringify(followingResponse.data));
+          // res.send(JSON.stringify(followingResponse.data));
+
+          const followers = await client.users.usersIdFollow(xid);
+          res.send(JSON.stringify(followers.data));
+
+
       } catch(err) {console.log('Followers Error',  err);}
     }
 
