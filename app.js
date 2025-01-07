@@ -279,7 +279,7 @@ app.get('/twitter/follows', async function (req, res){
           });
         
           res.send(JSON.stringify(followingResponse.data));
-      } catch(err) {console.log('Followers Error',  err.error);}
+      } catch(err) {console.log('Followers Error',  err);}
     }
 
     if (followers) {
@@ -294,7 +294,7 @@ app.get('/twitter/follows', async function (req, res){
       
         console.log('Followers Response: ',JSON.stringify(followersResponse.data));
         res.send(JSON.stringify(followersResponse));
-      } catch(err) {console.log('Followers Error',  err.error);}
+      } catch(err) {console.log('Followers Error',  err);}
   
     }
 
