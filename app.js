@@ -270,30 +270,30 @@ app.get('/twitter/follows', async function (req, res){
     if(follows) {
 
       try{
-          let pgToken = null; // this is for pagination purposeses only
-          const followingResponse = await axios.get("https://api.x.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified&max_results=1000&pagination_token="+pgToken, {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-            },
-          });
+          // let pgToken = null; // this is for pagination purposeses only
+          // const followingResponse = await axios.get("https://api.x.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified&max_results=1000&pagination_token="+pgToken, {
+          //   headers: {
+          //     "Content-Type": "application/json",
+          //     Authorization: `Bearer ${accessToken}`,
+          //   },
+          // });
         
-          res.send(JSON.stringify(followingResponse.data));
+          // res.send(JSON.stringify(followingResponse.data));
       } catch(err) {console.log('Followers Error',  err);}
     }
 
     if (followers) {
 
       try{
-        const followersResponse = await axios.get("https://api.twitter.com/2/users/"+xid+"/followers?user.fields=id,name,profile_image_url,username,verified", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
+        // const followersResponse = await axios.get("https://api.twitter.com/2/users/"+xid+"/followers?user.fields=id,name,profile_image_url,username,verified", {
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //     Authorization: `Bearer ${accessToken}`,
+        //   },
+        // });
       
-        console.log('Followers Response: ',JSON.stringify(followersResponse.data));
-        res.send(JSON.stringify(followersResponse));
+        // console.log('Followers Response: ',JSON.stringify(followersResponse.data));
+        // res.send(JSON.stringify(followersResponse));
       } catch(err) {console.log('Followers Error',  err);}
   
     }
