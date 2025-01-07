@@ -11,6 +11,10 @@
 // the frontend to make requests to the server
 
 const { Client, auth } = require("twitter-api-sdk");
+
+
+// const {oAuth1a} =  require("twitter-v1-oauth");
+
 const express = require("express");
 const isMobile = require('is-mobile');
 const axios = require("axios");
@@ -40,6 +44,14 @@ const authClient = new auth.OAuth2User({
   callback: process.env.BASE_URL + "/twitter/callback",
   scopes: ["tweet.read", "users.read"],
 });
+
+// const auth1Option = {
+//   api_key: process.env.TWITTER_API_KEY || "",
+//   api_secret_key: process.env.TWITTER_API_SECRET_KEY || "",
+//   access_token: process.env.X_ACCESS_TOKEN || "",
+//   access_token_secret: process.env.X_ACCESS_SECRET || "",
+// }
+
 
 const max = 100;
 const min = 1;
@@ -275,7 +287,7 @@ app.get('/twitter/follows', async function (req, res){
             headers: {
               "Content-Type": "application/json",
               "User-Agent": 'V2FollowingJS',
-              Authorization: `Bearer ${accessToken}`,
+              Authorization: `Bearer ${process.env.X_ACCESS_SECRET}`,
             },
           });
         
