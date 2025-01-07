@@ -287,7 +287,7 @@ app.get('/twitter/follows', async function (req, res){
             headers: {
               "Content-Type": "application/json",
               "User-Agent": 'V2FollowingJS',
-              Authorization: `Bearer ${process.env.X_ACCESS_SECRET}`,
+              Authorization: `Bearer ${process.env.X_BEARER_TOKEN}`,
             },
           });
         
