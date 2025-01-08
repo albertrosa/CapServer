@@ -126,6 +126,7 @@ app.get("/twitter/callback", async function (req, res) {
             total_x_msg: userResponse.statuses_count
           }
           // console.log(await loggedClient.currentUser());
+          console.log("WE got data response");
           console.log(tmp);
           
       })
@@ -163,8 +164,9 @@ app.get("/twitter/callback", async function (req, res) {
     //   console.log("Expected Error when doing user look up for free :-)")
     // }
 
+    console.log("Seding to Agent");
     console.log(tmp);
-    
+
     if (isMobile(req.headers['user-agent'])) {
 
       
@@ -192,7 +194,6 @@ app.get("/twitter/callback", async function (req, res) {
         </html> `);
     } else {
 
-      
       res.send(`
         <html>
         <body>
