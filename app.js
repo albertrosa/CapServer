@@ -85,14 +85,22 @@ app.get("/twitter/callback", async function (req, res) {
         accessSecret: oauth_token_secret,
       });
 
-      tmp = {
-        t: req.session.at,
-        // n: userResponse.data.data.name,
-        // u: userResponse.data.data.username,
-        // i: userResponse.data.data.id,
-        // f: Math.ceil(Math.random() * (max - min) + min)
-      }
+      // tmp = {
+      //   t: '',
+      //   s: '',
+      //   i: '',
+      //   n: '',
+      //   u: '',
+      //   fol_cnt: '',
+      //   friend_cnt: '',
+      //   created_at: '',
+      //   x_img: '',
+      //   verified: '',
+      //   private: '',
+      //   total_x_msg: '',
+      // }
 
+      console.log(tmp);
 
       client.login(oauth_verifier)
       .then(async ({ client: loggedClient, accessToken, accessSecret }) => {
@@ -155,6 +163,8 @@ app.get("/twitter/callback", async function (req, res) {
     //   console.log("Expected Error when doing user look up for free :-)")
     // }
 
+    console.log(tmp);
+    
     if (isMobile(req.headers['user-agent'])) {
 
       
