@@ -85,22 +85,7 @@ app.get("/twitter/callback", async function (req, res) {
         accessSecret: oauth_token_secret,
       });
 
-      // tmp = {
-      //   t: '',
-      //   s: '',
-      //   i: '',
-      //   n: '',
-      //   u: '',
-      //   fol_cnt: '',
-      //   friend_cnt: '',
-      //   created_at: '',
-      //   x_img: '',
-      //   verified: '',
-      //   private: '',
-      //   total_x_msg: '',
-      // }
 
-      console.log(tmp);
 
     await client.login(oauth_verifier)
       .then(async ({ client: loggedClient, accessToken, accessSecret }) => {
@@ -125,9 +110,6 @@ app.get("/twitter/callback", async function (req, res) {
             private: userResponse.protected,
             total_x_msg: userResponse.statuses_count
           }
-          // console.log(await loggedClient.currentUser());
-          console.log("WE got data response");
-          console.log(tmp);
           
       })
       .catch(() => res.status(403).send('Invalid verifier or access tokens!'));
@@ -163,9 +145,6 @@ app.get("/twitter/callback", async function (req, res) {
     // } catch(err) {
     //   console.log("Expected Error when doing user look up for free :-)")
     // }
-
-    console.log("Seding to Agent");
-    console.log(tmp);
 
     if (isMobile(req.headers['user-agent'])) {
 
@@ -331,12 +310,52 @@ app.get('/twitter/follows', async function (req, res){
 
     if (search)  {
       try {
-          const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query="+search+"&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name&max_results=100", {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-            },
+          //  v2 Auth Pattern
+          // const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query="+search+"&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name&max_results=100", {
+          //   headers: {
+          //     "User-Agent": "v2RecentSearchJS",
+          //     "Content-Type": "application/json",
+          //     Authorization: `Bearer ${accessToken}`,
+          //   },
+          // });
+
+          const client = new TwitterApi({
+            appKey: process.env.X_API_KEY,
+            appSecret: process.env.X_API_SECRET,
+            accessToken: req.session.at,
+            accessSecret: req.session.ats,
           });
+
+          const searchResponse = await client.search(search);
+          console.log(searchResponse);
+
+          // await client.login(oauth_verifier)
+          //   .then(async ({ client: loggedClient, accessToken, accessSecret }) => {
+          //     // loggedClient is an authenticated client in behalf of some user
+          //     // Store accessToken & accessSecret somewhere
+                
+          //       req.session.at = accessToken;
+          //       req.session.ats = accessSecret;
+          //       let userResponse = await loggedClient.currentUser();
+
+          //       tmp = {
+          //         t: req.session.at,
+          //         s: req.session.ats,
+          //         i: userResponse.id,
+          //         n: userResponse.name,
+          //         u: userResponse.screen_name,
+          //         fol_cnt: userResponse.followers_count,
+          //         friend_cnt: userResponse.friends_count,
+          //         created_at: userResponse.created_at,
+          //         x_img: userResponse.profile_image_url,
+          //         verified: userResponse.verified,
+          //         private: userResponse.protected,
+          //         total_x_msg: userResponse.statuses_count
+          //       }
+                
+          //   })
+          //   .catch(() => res.status(403).send('Invalid verifier or access tokens!'));
+
 
           res.send(JSON.stringify(searchResponse.data));
         } catch(err) {console.log('Me Error', err);}      
