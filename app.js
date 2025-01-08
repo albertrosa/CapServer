@@ -85,14 +85,40 @@ app.get("/twitter/callback", async function (req, res) {
         accessSecret: oauth_token_secret,
       });
 
+      tmp = {
+        t: req.session.at,
+        // n: userResponse.data.data.name,
+        // u: userResponse.data.data.username,
+        // i: userResponse.data.data.id,
+        // f: Math.ceil(Math.random() * (max - min) + min)
+      }
+
 
       client.login(oauth_verifier)
       .then(async ({ client: loggedClient, accessToken, accessSecret }) => {
         // loggedClient is an authenticated client in behalf of some user
         // Store accessToken & accessSecret somewhere
+          
           req.session.at = accessToken;
           req.session.ats = accessSecret;
-          console.log(await loggedClient.currentUser());
+          let userResponse = await loggedClient.currentUser();
+
+          tmp = {
+            t: req.session.at,
+            s: req.session.ats,
+            i: userResponse.id,
+            n: userResponse.name,
+            u: userResponse.screen_name,
+            fol_cnt: userResponse.followers_count,
+            friend_cnt: userResponse.friends_count,
+            created_at: userResponse.created_at,
+            x_img: userResponse.profile_image_url,
+            verified: userResponse.verified,
+            private: userResponse.protected,
+            total_x_msg: userResponse.statuses_count
+          }
+          // console.log(await loggedClient.currentUser());
+          console.log(tmp);
           
       })
       .catch(() => res.status(403).send('Invalid verifier or access tokens!'));
@@ -109,23 +135,14 @@ app.get("/twitter/callback", async function (req, res) {
       //     },
       //   });
 
-      tmp = {
-        t: req.session.at,
-        // n: userResponse.data.data.name,
-        // u: userResponse.data.data.username,
-        // i: userResponse.data.data.id,
-        // f: Math.ceil(Math.random() * (max - min) + min)
-      }
-
-      // req.session.userId =  Math.ceil(Math.random() * 100)
-      // req.session.name = tmp.n;
-      // req.session.username = tmp.u;
-      // req.session.at = accessToken;
-      // req.session.xUsername = tmp.u;
-      // req.session.xId = tmp.i;
-      // req.session.xFollowers = tmp.f;
+      // tmp = {
+      //   t: req.session.at,
+      //   // n: userResponse.data.data.name,
+      //   // u: userResponse.data.data.username,
+      //   // i: userResponse.data.data.id,
+      //   // f: Math.ceil(Math.random() * (max - min) + min)
+      // }
     
-
     // let followersResponse;
     // try {
     //   followersResponse = await axios.get("https://api.twitter.com/2/users/"+tmp.i+"/followers?user.fields=username,verified", {
