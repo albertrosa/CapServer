@@ -10,6 +10,7 @@
 // The server is also responsible for setting up CORS to allow
 // the frontend to make requests to the server
 
+const { TwitterApi } = require("twitter-api-v2");
 const { Client, auth } = require("twitter-api-sdk");
 
 
@@ -21,7 +22,7 @@ const axios = require("axios");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const session = require('express-session');
-const { TwitterApi } = require("twitter-api-v2");
+
 
 
 let accessToken = "";
@@ -216,6 +217,7 @@ app.get("/twitter/login", async function (req, res) {
   } else {
 
     const callback = process.env.BASE_URL + "/twitter/callback";
+    req.session.loginS = true;
 
     // V1 Auth
     const authlink = await client.generateAuthLink(callback, {linkMode: 'authorize'});
