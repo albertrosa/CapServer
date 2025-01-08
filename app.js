@@ -121,18 +121,30 @@ app.get("/twitter/callback", async function (req, res) {
 
       // V2 Stuff
       const accessToken = (await authClient.requestAccessToken(code)).token.access_token;
+      req.session.at = accessToken;
       const userResponse = await axios.get("https://api.twitter.com/2/users/me", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
         });
+
+      console.log(userResponse.data.data);
       tmp = {
         t: req.session.at,
         n: userResponse.data.data.name,
         u: userResponse.data.data.username,
         i: userResponse.data.data.id,
         f: Math.ceil(Math.random() * (max - min) + min)
+    
+    //         s: req.session.ats,
+    //         fol_cnt: userResponse.followers_count,
+    //         friend_cnt: userResponse.friends_count,
+    //         created_at: userResponse.created_at,
+    //         x_img: userResponse.profile_image_url,
+    //         verified: userResponse.verified,
+    //         private: userResponse.protected,
+    //         total_x_msg: userResponse.statuses_count
       }
     
     // let followersResponse;
