@@ -221,6 +221,8 @@ app.get("/twitter/login", async function (req, res) {
 
     // V1 Auth
     const authlink = await client.generateAuthLink(callback, {linkMode: 'authorize'});
+    req.session.oauth_token = authlink.oauth_token;
+    req.session.oauth_token_secret = authlink.oauth_token_secret;
     res.redirect(authlink.url);
 
     // // V2 Auth
