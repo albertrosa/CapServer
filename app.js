@@ -361,9 +361,10 @@ app.get('/twitter/follows', async function (req, res){
         
           // res.send(JSON.stringify(followingResponse.data));
 
-          const followers = await client.usersIdFollow(xid);
+          const followers = await client.v1.userFriendList();
+          console.log(followers);
           res.send(JSON.stringify(followers.data));
-
+          return;
 
       } catch(err) {console.log('Followers Error',  err);}
     }
@@ -371,7 +372,7 @@ app.get('/twitter/follows', async function (req, res){
     if (followers) {
 
       try{
-        const followersResponse = await axios.get("https://api.twitter.com/2/users/"+xid+"/followers?user.fields=id,name,profile_image_url,username,verified", {
+        const followersResponse = await axios.get("https://api.twitter.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified", {
           headers: {
             "Content-Type": "application/json",
                 "User-Agent": 'V2FollowersJS',
@@ -381,6 +382,7 @@ app.get('/twitter/follows', async function (req, res){
       
         console.log('Followers Response: ',JSON.stringify(followersResponse.data));
         res.send(JSON.stringify(followersResponse));
+        return;
       } catch(err) {console.log('Followers Error',  err);}
   
     }
