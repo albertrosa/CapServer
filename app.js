@@ -75,10 +75,6 @@ app.get("/twitter/callback", async function (req, res) {
       if (!oauth_token || !oauth_verifier || !oauth_token_secret) {        
         return res.status(400).send('You denied the app or your session expired!' + oauth_token + ' ' + oauth_verifier +' ' + oauth_token_secret);
       }
-      
-      console.log(req.session);
-      console.log(process.env.X_API_KEY);
-      console.log(process.env.X_API_SECRET);
 
       // Obtain the persistent tokens
       // Create a client from temporary tokens
@@ -91,12 +87,12 @@ app.get("/twitter/callback", async function (req, res) {
 
 
       client.login(oauth_verifier)
-      .then(({ client: loggedClient, accessToken, accessSecret }) => {
+      .then(async ({ client: loggedClient, accessToken, accessSecret }) => {
         // loggedClient is an authenticated client in behalf of some user
         // Store accessToken & accessSecret somewhere
           req.session.at = accessToken;
           req.session.ats = accessSecret;
-          console.log(loggedClient.currentUser());
+          console.log(await loggedClient.currentUser());
           
       })
       .catch(() => res.status(403).send('Invalid verifier or access tokens!'));
@@ -113,13 +109,13 @@ app.get("/twitter/callback", async function (req, res) {
       //     },
       //   });
 
-      // tmp = {
-      //   t: accessToken,
-      //   n: userResponse.data.data.name,
-      //   u: userResponse.data.data.username,
-      //   i: userResponse.data.data.id,
-      //   f: Math.ceil(Math.random() * (max - min) + min)
-      // }
+      tmp = {
+        t: req.session.at,
+        // n: userResponse.data.data.name,
+        // u: userResponse.data.data.username,
+        // i: userResponse.data.data.id,
+        // f: Math.ceil(Math.random() * (max - min) + min)
+      }
 
       // req.session.userId =  Math.ceil(Math.random() * 100)
       // req.session.name = tmp.n;
