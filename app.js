@@ -343,8 +343,8 @@ app.get('/twitter/follows', async function (req, res){
           const searchResponse = await client.search(search);
           console.log(searchResponse.data);
           res.send(JSON.stringify(searchResponse.data));
-          return;
-        } catch(err) {console.log('Me Error', err);}      
+        } catch(err) {console.log('Me Error', err);}     
+        return; 
     }
 
 
@@ -353,14 +353,14 @@ app.get('/twitter/follows', async function (req, res){
       console.log("Follows MADE IT HERE?");
       try{
           let pgToken = null; // this is for pagination purposeses only
-          const followingResponse = await axios.get("https://api.x.com/1.1/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified&max_results=1000&pagination_token="+pgToken, {
-            headers: {
-              "Content-Type": "application/json",
-              "User-Agent": 'V2FollowingJS',
-              Authorization: `Bearer ${process.env.X_BEARER_TOKEN}`,  
-            },
-          });
-          console.log(followingResponse);
+          // const followingResponse = await axios.get("https://api.x.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified&max_results=1000&pagination_token="+pgToken, {
+          //   headers: {
+          //     "Content-Type": "application/json",
+          //     "User-Agent": 'V2FollowingJS',
+          //     Authorization: `Bearer ${process.env.X_BEARER_TOKEN}`,  
+          //   },
+          // });
+          // console.log(followingResponse);
           // res.send(JSON.stringify(followingResponse.data));
           console.log(await client.currentUser());
           //--header 'authorization: OAuth oauth_consumer_key="CONSUMER_API_KEY", oauth_nonce="OAUTH_NONCE", oauth_signature="OAUTH_SIGNATURE", oauth_signature_method="HMAC-SHA1", oauth_timestamp="OAUTH_TIMESTAMP", oauth_token="ACCESS_TOKEN", oauth_version="1.0"' \
@@ -368,9 +368,10 @@ app.get('/twitter/follows', async function (req, res){
           // const followers = await client.v1.userFollowerIds({id:xid});
           // console.log(followers.ids);
           // res.send(JSON.stringify(followers.ids));
-          return;
+          
 
       } catch(err) {console.log('Followers Error',  err);}
+      return;
     }
 
     
@@ -392,10 +393,10 @@ app.get('/twitter/follows', async function (req, res){
           
           const followers = await client.v1.friendship({source_id: xid, target_id: rid});
           console.log(followers);
-          res.send(JSON.stringify(followers.data));
-          return;
+          res.send(JSON.stringify(followers.data));          
 
       } catch(err) {console.log('Followers Error',  err);}
+      return;
       // try{
       //   const followersResponse = await axios.get("https://api.twitter.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified", {
       //     headers: {
@@ -424,7 +425,6 @@ app.get('/twitter/follows', async function (req, res){
     res.send("LOGIN");
   }  
 });
-
 
 app.use(
   cors(
