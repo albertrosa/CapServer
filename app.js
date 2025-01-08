@@ -61,7 +61,6 @@ const min = 1;
 // https://github.com/plhery/node-twitter-api-v2/blob/HEAD/doc/auth.md#user-wide-authentication-flow
 
 
-// const client = new TwitterApi({appKey: process.env.X_API_KEY, appSecret: process.env.X_API_SECRET})
 // const client = new Client(process.env.X_BEARER_TOKEN);
 
 const STATE = "my-state";
@@ -226,6 +225,7 @@ app.get("/twitter/login", async function (req, res) {
     const callback = process.env.BASE_URL + "/twitter/callback";
     req.session.loginS = true;
 
+    const client = new TwitterApi({appKey: process.env.X_API_KEY, appSecret: process.env.X_API_SECRET})
     // V1 Auth
     const authlink = await client.generateAuthLink(callback, {linkMode: 'authorize'});
     req.session.oauth_token = authlink.oauth_token;
