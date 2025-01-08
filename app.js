@@ -102,7 +102,7 @@ app.get("/twitter/callback", async function (req, res) {
 
       console.log(tmp);
 
-      client.login(oauth_verifier)
+    await client.login(oauth_verifier)
       .then(async ({ client: loggedClient, accessToken, accessSecret }) => {
         // loggedClient is an authenticated client in behalf of some user
         // Store accessToken & accessSecret somewhere
