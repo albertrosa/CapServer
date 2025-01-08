@@ -218,7 +218,7 @@ app.get("/twitter/login", async function (req, res) {
     const callback = process.env.BASE_URL + "/twitter/callback";
 
     // V1 Auth
-    const authlink = await client.generateAuthLink(callback);
+    const authlink = await client.generateAuthLink(callback, {linkMode: 'authorize'});
     res.redirect(authlink.url);
 
     // // V2 Auth
