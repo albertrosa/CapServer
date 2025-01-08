@@ -301,7 +301,7 @@ app.get('/logout', async function (req, res) {
 
 app.get('/twitter/follows', async function (req, res){
 
-  const { xt, xs, xid, follows, search, followers, tweets } = req.query;    
+  const { xt, xs, xid, follows, search, followers, tweets, rid } = req.query;    
 
   if (req.session.userId || xt) {
     let client; 
@@ -361,29 +361,49 @@ app.get('/twitter/follows', async function (req, res){
         
           // res.send(JSON.stringify(followingResponse.data));
 
-          const followers = await client.v1.userFriendList();
-          console.log(followers);
-          res.send(JSON.stringify(followers.data));
+          
+          const followers = await client.v1.userFollowerIds({id:xid});
+          console.log(followers.ids);
+          res.send(JSON.stringify(followers.ids));
           return;
 
       } catch(err) {console.log('Followers Error',  err);}
     }
 
     if (followers) {
-
+      console.log("FollowERSs MADE IT HERE?");
       try{
-        const followersResponse = await axios.get("https://api.twitter.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified", {
-          headers: {
-            "Content-Type": "application/json",
-                "User-Agent": 'V2FollowersJS',
-            Authorization: `Bearer ${process.env.X_BEARER_TOKEN}`,
-          },
-        });
-      
-        console.log('Followers Response: ',JSON.stringify(followersResponse.data));
-        res.send(JSON.stringify(followersResponse));
-        return;
+          let pgToken = null; // this is for pagination purposeses only
+          // const followingResponse = await axios.get("https://api.x.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified&max_results=1000&pagination_token="+pgToken, {
+          //   headers: {
+          //     "Content-Type": "application/json",
+          //     "User-Agent": 'V2FollowingJS',
+          //     Authorization: `Bearer ${process.env.X_BEARER_TOKEN}`,
+          //   },
+          // });
+        
+          // res.send(JSON.stringify(followingResponse.data));
+
+          
+          const followers = await client.v1.friendship({source_id: xid, target_id: rid});
+          console.log(followers);
+          res.send(JSON.stringify(followers.data));
+          return;
+
       } catch(err) {console.log('Followers Error',  err);}
+      // try{
+      //   const followersResponse = await axios.get("https://api.twitter.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified", {
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //           "User-Agent": 'V2FollowersJS',
+      //       Authorization: `Bearer ${process.env.X_BEARER_TOKEN}`,
+      //     },
+      //   });
+      
+      //   console.log('Followers Response: ',JSON.stringify(followersResponse.data));
+      //   res.send(JSON.stringify(followersResponse));
+      //   return;
+      // } catch(err) {console.log('Followers Error',  err);}
   
     }
 
