@@ -72,11 +72,14 @@ app.get("/twitter/callback", async function (req, res) {
       const { code, state, oauth_token, oauth_verifier } = req.query;    
       const { oauth_token_secret } = req.session;
 
-      if (!oauth_token || !oauth_verifier || !oauth_token_secret) {
-        console.log(req.session);
+      if (!oauth_token || !oauth_verifier || !oauth_token_secret) {        
         return res.status(400).send('You denied the app or your session expired!' + oauth_token + ' ' + oauth_verifier +' ' + oauth_token_secret);
       }
-
+      
+      console.log(req.session);
+      console.log(process.env.TWITTER_API_KEY);
+      console.log(process.env.TWITTER_API_SECRET_KEY);
+      
       // Obtain the persistent tokens
       // Create a client from temporary tokens
       const client = new TwitterApi({
