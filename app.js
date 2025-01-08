@@ -319,6 +319,8 @@ app.get('/twitter/follows', async function (req, res){
           //     Authorization: `Bearer ${accessToken}`,
           //   },
           // });
+          console.log("Searching with: ");
+          console.log(req.session);
 
           const client = new TwitterApi({
             appKey: process.env.X_API_KEY,
@@ -326,6 +328,8 @@ app.get('/twitter/follows', async function (req, res){
             accessToken: req.session.at,
             accessSecret: req.session.ats,
           });
+
+          // const client = new TwitterApi({appKey: process.env.X_API_KEY, appSecret: process.env.X_API_SECRET})
 
           const searchResponse = await client.search(search);
           
@@ -359,6 +363,7 @@ app.get('/twitter/follows', async function (req, res){
 
           console.log(searchResponse.data);
           res.send(JSON.stringify(searchResponse.data));
+          return;
         } catch(err) {console.log('Me Error', err);}      
     }
 
