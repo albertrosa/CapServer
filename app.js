@@ -77,14 +77,14 @@ app.get("/twitter/callback", async function (req, res) {
       }
       
       console.log(req.session);
-      console.log(process.env.TWITTER_API_KEY);
-      console.log(process.env.TWITTER_API_SECRET_KEY);
-      
+      console.log(process.env.X_API_KEY);
+      console.log(process.env.X_API_SECRET_KEY);
+
       // Obtain the persistent tokens
       // Create a client from temporary tokens
       const client = new TwitterApi({
-        appKey: process.env.TWITTER_API_KEY,
-        appSecret: process.env.TWITTER_API_SECRET_KEY,
+        appKey: process.env.X_API_KEY,
+        appSecret: process.env.X_SECRET_KEY,
         accessToken: oauth_token,
         accessSecret: oauth_token_secret,
       });
