@@ -60,7 +60,8 @@ const min = 1;
 
 // https://github.com/plhery/node-twitter-api-v2/blob/HEAD/doc/auth.md#user-wide-authentication-flow
 
-const client = new TwitterApi({appKey: process.env.X_API_KEY, appSecret: process.env.X_API_SECRET})
+
+// const client = new TwitterApi({appKey: process.env.X_API_KEY, appSecret: process.env.X_API_SECRET})
 // const client = new Client(process.env.X_BEARER_TOKEN);
 
 const STATE = "my-state";
@@ -327,7 +328,7 @@ app.get('/twitter/follows', async function (req, res){
           });
 
           const searchResponse = await client.search(search);
-          console.log(searchResponse);
+          
 
           // await client.login(oauth_verifier)
           //   .then(async ({ client: loggedClient, accessToken, accessSecret }) => {
@@ -356,10 +357,12 @@ app.get('/twitter/follows', async function (req, res){
           //   })
           //   .catch(() => res.status(403).send('Invalid verifier or access tokens!'));
 
-
+          console.log(searchResponse.data);
           res.send(JSON.stringify(searchResponse.data));
         } catch(err) {console.log('Me Error', err);}      
     }
+
+    console.log("WHY WE MADE IT HERE?");
 
     if(follows) {
 
