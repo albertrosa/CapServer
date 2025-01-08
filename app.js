@@ -301,7 +301,7 @@ app.get('/logout', async function (req, res) {
 
 app.get('/twitter/follows', async function (req, res){
 
-  const { xt, xid, follows, search, followers, tweets } = req.query;    
+  const { xt, xs, xid, follows, search, followers, tweets } = req.query;    
 
   if (req.session.userId || xt) {
   // const accessToken = req.session.at;
@@ -322,12 +322,23 @@ app.get('/twitter/follows', async function (req, res){
           console.log("Searching with: ");
           console.log(req.session);
 
-          const client = new TwitterApi({
-            appKey: process.env.X_API_KEY,
-            appSecret: process.env.X_API_SECRET,
-            accessToken: req.session.at,
-            accessSecret: req.session.ats,
-          });
+          let client; 
+
+          if (req.session.at && req.session.ats) {
+            const client = new TwitterApi({
+              appKey: process.env.X_API_KEY,
+              appSecret: process.env.X_API_SECRET,
+              accessToken: req.session.at,
+              accessSecret: req.session.ats,
+            });
+          } else {
+            const client = new TwitterApi({
+              appKey: process.env.X_API_KEY,
+              appSecret: process.env.X_API_SECRET,
+              accessToken: xt,
+              accessSecret: xs,
+            });
+          }
 
           // const client = new TwitterApi({appKey: process.env.X_API_KEY, appSecret: process.env.X_API_SECRET})
 
