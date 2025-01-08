@@ -61,7 +61,6 @@ const min = 1;
 // https://github.com/plhery/node-twitter-api-v2/blob/HEAD/doc/auth.md#user-wide-authentication-flow
 
 
-// const client = new Client(process.env.X_BEARER_TOKEN);
 
 const STATE = "my-state";
 
@@ -376,6 +375,8 @@ app.get('/twitter/follows', async function (req, res){
           // });
           // console.log(followingResponse);
           // res.send(JSON.stringify(followingResponse.data));
+
+          client = new TwitterApi(process.env.X_BEARER_TOKEN);
           console.log(await client.currentUser());
           console.log(await client.v2.followers(xid,  {max_results: 1000}));
           res.send("DONE");
