@@ -304,10 +304,23 @@ app.get('/twitter/follows', async function (req, res){
   const { xt, xs, xid, follows, search, followers, tweets } = req.query;    
 
   if (req.session.userId || xt) {
-  // const accessToken = req.session.at;
-  // const xid =  req.session.xId;
+    let client; 
 
-    const accessToken = xt; 
+    if (req.session.at && req.session.ats) {
+      client = new TwitterApi({
+        appKey: process.env.X_API_KEY,
+        appSecret: process.env.X_API_SECRET,
+        accessToken: req.session.at,
+        accessSecret: req.session.ats,
+      });
+    } else {
+      client = new TwitterApi({
+        appKey: process.env.X_API_KEY,
+        appSecret: process.env.X_API_SECRET,
+        accessToken: xt,
+        accessSecret: xs,
+      });
+    }
 
     if (search)  {
       try {
@@ -319,69 +332,23 @@ app.get('/twitter/follows', async function (req, res){
           //     Authorization: `Bearer ${accessToken}`,
           //   },
           // });
+
+          // v1 pattern
           console.log("Searching with: ");
           console.log(req.session);
 
-          let client; 
-
-          if (req.session.at && req.session.ats) {
-            client = new TwitterApi({
-              appKey: process.env.X_API_KEY,
-              appSecret: process.env.X_API_SECRET,
-              accessToken: req.session.at,
-              accessSecret: req.session.ats,
-            });
-          } else {
-            client = new TwitterApi({
-              appKey: process.env.X_API_KEY,
-              appSecret: process.env.X_API_SECRET,
-              accessToken: xt,
-              accessSecret: xs,
-            });
-          }
-
-          // const client = new TwitterApi({appKey: process.env.X_API_KEY, appSecret: process.env.X_API_SECRET})
 
           const searchResponse = await client.search(search);
-          
-
-          // await client.login(oauth_verifier)
-          //   .then(async ({ client: loggedClient, accessToken, accessSecret }) => {
-          //     // loggedClient is an authenticated client in behalf of some user
-          //     // Store accessToken & accessSecret somewhere
-                
-          //       req.session.at = accessToken;
-          //       req.session.ats = accessSecret;
-          //       let userResponse = await loggedClient.currentUser();
-
-          //       tmp = {
-          //         t: req.session.at,
-          //         s: req.session.ats,
-          //         i: userResponse.id,
-          //         n: userResponse.name,
-          //         u: userResponse.screen_name,
-          //         fol_cnt: userResponse.followers_count,
-          //         friend_cnt: userResponse.friends_count,
-          //         created_at: userResponse.created_at,
-          //         x_img: userResponse.profile_image_url,
-          //         verified: userResponse.verified,
-          //         private: userResponse.protected,
-          //         total_x_msg: userResponse.statuses_count
-          //       }
-                
-          //   })
-          //   .catch(() => res.status(403).send('Invalid verifier or access tokens!'));
-
           console.log(searchResponse.data);
           res.send(JSON.stringify(searchResponse.data));
           return;
         } catch(err) {console.log('Me Error', err);}      
     }
 
-    console.log("WHY WE MADE IT HERE?");
 
     if(follows) {
 
+      console.log("Follows MADE IT HERE?");
       try{
           let pgToken = null; // this is for pagination purposeses only
           // const followingResponse = await axios.get("https://api.x.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified&max_results=1000&pagination_token="+pgToken, {
