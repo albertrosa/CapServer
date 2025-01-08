@@ -321,6 +321,7 @@ app.get('/twitter/follows', async function (req, res){
         accessSecret: xs,
       });
     }
+    client.readOnly;
 
     
 
@@ -363,7 +364,7 @@ app.get('/twitter/follows', async function (req, res){
           // console.log(followingResponse);
           // res.send(JSON.stringify(followingResponse.data));
           console.log(await client.currentUser());
-          console.log(await client.v1.following(xid));
+          console.log(await client.v1.friendship({source_id: xid, target_id: rid}));
           res.send("DONE");
           //--header 'authorization: OAuth oauth_consumer_key="CONSUMER_API_KEY", oauth_nonce="OAUTH_NONCE", oauth_signature="OAUTH_SIGNATURE", oauth_signature_method="HMAC-SHA1", oauth_timestamp="OAUTH_TIMESTAMP", oauth_token="ACCESS_TOKEN", oauth_version="1.0"' \
           
