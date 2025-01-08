@@ -72,7 +72,8 @@ app.get("/twitter/callback", async function (req, res) {
       const { oauth_token_secret } = req.session;
 
       if (!oauth_token || !oauth_verifier || !oauth_token_secret) {
-        return res.status(400).send('You denied the app or your session expired!');
+        console.log(req.session);
+        return res.status(400).send('You denied the app or your session expired!' + oauth_token + ' ' + oauth_verifier +' ' + oauth_token_secret);
       }
 
       // Obtain the persistent tokens
