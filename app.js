@@ -21,6 +21,7 @@ const axios = require("axios");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const session = require('express-session');
+const { TwitterApi } = require("twitter-api-v2");
 
 
 let accessToken = "";
@@ -45,61 +46,84 @@ const authClient = new auth.OAuth2User({
   scopes: ["tweet.read", "users.read"],
 });
 
+
 const auth1Option = {
-  api_key: process.env.TWITTER_API_KEY || "",
-  api_secret_key: process.env.TWITTER_API_SECRET_KEY || "",
+  api_key: process.env.X_API_SECRET || "",
+  api_secret_key: process.env.X_API_KEY || "",
   access_token: process.env.X_ACCESS_TOKEN || "",
   access_token_secret: process.env.X_ACCESS_SECRET || "",
 }
 
-
 const max = 100;
 const min = 1;
 
-const client = new Client(process.env.X_BEARER_TOKEN);
+// https://github.com/plhery/node-twitter-api-v2/blob/HEAD/doc/auth.md#user-wide-authentication-flow
+
+const client = new TwitterApi({appKey: process.env.X_API_KEY, appSecret: process.env.X_API_SECRET})
+// const client = new Client(process.env.X_BEARER_TOKEN);
 
 const STATE = "my-state";
 
 app.get("/twitter/callback", async function (req, res) {
   try {
     let tmp;
-    if (req.session.userId) {
-      tmp = {
-        t: req.session.at,
-        n: req.session.name,
-        u: req.session.username,
-        i: req.session.xId,
-        f: req.session.xFollowers
-      }
-      // res.send(JSON.stringify(tmp));
-    } else {
       // fresh login
-      const { code, state } = req.query;    
-      const accessToken = (await authClient.requestAccessToken(code)).token.access_token;
+      const { code, state, oauth_token, oauth_verifier } = req.query;    
+      const { oauth_token_secret } = req.session;
 
-      const userResponse = await axios.get("https://api.twitter.com/2/users/me", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-
-      tmp = {
-        t: accessToken,
-        n: userResponse.data.data.name,
-        u: userResponse.data.data.username,
-        i: userResponse.data.data.id,
-        f: Math.ceil(Math.random() * (max - min) + min)
+      if (!oauth_token || !oauth_verifier || !oauth_token_secret) {
+        return res.status(400).send('You denied the app or your session expired!');
       }
 
-      req.session.userId =  Math.ceil(Math.random() * 100)
-      req.session.name = tmp.n;
-      req.session.username = tmp.u;
-      req.session.at = accessToken;
-      req.session.xUsername = tmp.u;
-      req.session.xId = tmp.i;
-      req.session.xFollowers = tmp.f;
-    }
+      // Obtain the persistent tokens
+      // Create a client from temporary tokens
+      const client = new TwitterApi({
+        appKey: process.env.TWITTER_API_KEY,
+        appSecret: process.env.TWITTER_API_SECRET_KEY,
+        accessToken: oauth_token,
+        accessSecret: oauth_token_secret,
+      });
+
+
+      client.login(oauth_verifier)
+      .then(({ client: loggedClient, accessToken, accessSecret }) => {
+        // loggedClient is an authenticated client in behalf of some user
+        // Store accessToken & accessSecret somewhere
+          req.session.at = accessToken;
+          req.session.ats = accessSecret;
+          console.log(loggedClient.currentUser());
+          
+      })
+      .catch(() => res.status(403).send('Invalid verifier or access tokens!'));
+
+      // endof V1 oauth Stuff
+
+      // V2 Stuff
+      // const accessToken = (await authClient.requestAccessToken(code)).token.access_token;
+
+      // const userResponse = await axios.get("https://api.twitter.com/2/users/me", {
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: `Bearer ${accessToken}`,
+      //     },
+      //   });
+
+      // tmp = {
+      //   t: accessToken,
+      //   n: userResponse.data.data.name,
+      //   u: userResponse.data.data.username,
+      //   i: userResponse.data.data.id,
+      //   f: Math.ceil(Math.random() * (max - min) + min)
+      // }
+
+      // req.session.userId =  Math.ceil(Math.random() * 100)
+      // req.session.name = tmp.n;
+      // req.session.username = tmp.u;
+      // req.session.at = accessToken;
+      // req.session.xUsername = tmp.u;
+      // req.session.xId = tmp.i;
+      // req.session.xFollowers = tmp.f;
+    
 
     // let followersResponse;
     // try {
@@ -190,11 +214,18 @@ app.get("/twitter/login", async function (req, res) {
     res.redirect('/twitter/callback')  
   } else {
 
-    const authUrl = authClient.generateAuthURL({
-      state: STATE,
-      code_challenge_method: "s256",
-    });
-    res.redirect(authUrl);
+    const callback = process.env.BASE_URL + "/twitter/callback";
+
+    // V1 Auth
+    const authlink = await client.generateAuthLink(callback);
+    res.redirect(authlink.url);
+
+    // // V2 Auth
+    // const authUrl = authClient.generateAuthURL({
+    //   state: STATE,
+    //   code_challenge_method: "s256",
+    // });
+    // res.redirect(authUrl);
   }
 
 
@@ -328,8 +359,6 @@ app.get('/twitter/follows', async function (req, res){
     res.send("LOGIN");
   }  
 });
-
-
 
 
 app.use(
