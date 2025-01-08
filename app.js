@@ -325,14 +325,14 @@ app.get('/twitter/follows', async function (req, res){
           let client; 
 
           if (req.session.at && req.session.ats) {
-            const client = new TwitterApi({
+            client = new TwitterApi({
               appKey: process.env.X_API_KEY,
               appSecret: process.env.X_API_SECRET,
               accessToken: req.session.at,
               accessSecret: req.session.ats,
             });
           } else {
-            const client = new TwitterApi({
+            client = new TwitterApi({
               appKey: process.env.X_API_KEY,
               appSecret: process.env.X_API_SECRET,
               accessToken: xt,
