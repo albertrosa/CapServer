@@ -120,6 +120,31 @@ const v1CallBack = async (req, res) => {
     .catch(() => res.status(403).send('Invalid verifier or access tokens!'));
 }
 
+const v1Search = async(req, res) => {
+  const { xt, xs, xid, follows, search, followers, tweets, rid } = req.query;    
+  let client; 
+
+    if (req.session.at && req.session.ats) {
+      client = new TwitterApi({
+        appKey: process.env.X_API_KEY,
+        appSecret: process.env.X_API_SECRET,
+        accessToken: req.session.at,
+        accessSecret: req.session.ats,
+      });
+    } else {
+      client = new TwitterApi({
+        appKey: process.env.X_API_KEY,
+        appSecret: process.env.X_API_SECRET,
+        accessToken: xt,
+        accessSecret: xs,
+      });
+    }
+    client.readOnly;
+
+  const searchResponse = await client.search(search);
+  console.log(searchResponse.data);
+  res.send(JSON.stringify(searchResponse.data));
+}
 
 
 app.get("/twitter/callback", async function (req, res) {
@@ -138,36 +163,20 @@ app.get("/twitter/callback", async function (req, res) {
           },
         });
     
-
       console.log(userResponse.data.data);
       tmp = {
         t: req.session.at,
         n: userResponse.data.data.name,
         u: userResponse.data.data.username,
-        i: userResponse.data.data.id,
-        f: Math.ceil(Math.random() * (max - min) + min)
-    
-    //         s: req.session.ats,
-    //         fol_cnt: userResponse.followers_count,
-    //         friend_cnt: userResponse.friends_count,
-    //         created_at: userResponse.created_at,
-    //         x_img: userResponse.profile_image_url,
-    //         verified: userResponse.verified,
-    //         private: userResponse.protected,
-    //         total_x_msg: userResponse.statuses_count
+        i: userResponse.data.data.id,        
+        x_img: userResponse.data.data.profile_image_url,
+        created_at:userResponse.data.data.created_at,
+        s:null,
+        fol_cnt: userResponse.data.data.public_metrics.followers_count,
+        friend_cnt: userResponse.data.data.public_metrics.following_count,
+        verified: userResponse.data.data.verified,
+        verified_type: userResponse.data.data.verified_type,    
       }
-    
-    // let followersResponse;
-    // try {
-    //   followersResponse = await axios.get("https://api.twitter.com/2/users/"+tmp.i+"/followers?user.fields=username,verified", {
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       Authorization: `Bearer ${accessToken}`,
-    //     },
-    //   });
-    // } catch(err) {
-    //   console.log("Expected Error when doing user look up for free :-)")
-    // }
 
     if (isMobile(req.headers['user-agent'])) {
 
@@ -317,126 +326,31 @@ app.get('/twitter/follows', async function (req, res){
   const { xt, xs, xid, follows, search, followers, tweets, rid } = req.query;    
 
   if (req.session.userId || xt) {
-    let client; 
-
-    if (req.session.at && req.session.ats) {
-      client = new TwitterApi({
-        appKey: process.env.X_API_KEY,
-        appSecret: process.env.X_API_SECRET,
-        accessToken: req.session.at,
-        accessSecret: req.session.ats,
-      });
-    } else {
-      client = new TwitterApi({
-        appKey: process.env.X_API_KEY,
-        appSecret: process.env.X_API_SECRET,
-        accessToken: xt,
-        accessSecret: xs,
-      });
-    }
-    client.readOnly;
-
     
 
     if (search)  {
       try {
           //  v2 Auth Pattern
-          // const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query="+search+"&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name&max_results=100", {
-          //   headers: {
-          //     "User-Agent": "v2RecentSearchJS",
-          //     "Content-Type": "application/json",
-          //     Authorization: `Bearer ${accessToken}`,
-          //   },
-          // });
-
-          // v1 pattern
-          console.log("Searching with: ");
-          console.log(req.session);
-
-
-          const searchResponse = await client.search(search);
+          const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query="+search+"&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name&max_results=100", {
+            headers: {
+              "User-Agent": "v2RecentSearchJS",
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${xt}`,
+            },
+          });
           console.log(searchResponse.data);
           res.send(JSON.stringify(searchResponse.data));
+
         } catch(err) {console.log('Me Error', err);}     
         return; 
     }
 
-
-    if(follows) {
-
-      console.log("Follows MADE IT HERE?");
-      try{
-          let pgToken = null; // this is for pagination purposeses only
-          // const followingResponse = await axios.get("https://api.x.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified&max_results=1000&pagination_token="+pgToken, {
-          //   headers: {
-          //     "Content-Type": "application/json",
-          //     "User-Agent": 'V2FollowingJS',
-          //     Authorization: `Bearer ${process.env.X_BEARER_TOKEN}`,  
-          //   },
-          // });
-          // console.log(followingResponse);
-          // res.send(JSON.stringify(followingResponse.data));
-
-          client = new TwitterApi(process.env.X_BEARER_TOKEN);
-          console.log(await client.currentUser());
-          console.log(await client.v2.followers(xid,  {max_results: 1000}));
-          res.send("DONE");
-          //--header 'authorization: OAuth oauth_consumer_key="CONSUMER_API_KEY", oauth_nonce="OAUTH_NONCE", oauth_signature="OAUTH_SIGNATURE", oauth_signature_method="HMAC-SHA1", oauth_timestamp="OAUTH_TIMESTAMP", oauth_token="ACCESS_TOKEN", oauth_version="1.0"' \
-          
-          // const followers = await client.v1.userFollowerIds({id:xid});
-          // console.log(followers.ids);
-          // res.send(JSON.stringify(followers.ids));
-          
-
-      } catch(err) {console.log('Followers Error',  err);}
-      return;
-    }
-
-    
-
-    if (followers) {
-      console.log("FollowERSs MADE IT HERE?");
-      try{
-          let pgToken = null; // this is for pagination purposeses only
-          // const followingResponse = await axios.get("https://api.x.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified&max_results=1000&pagination_token="+pgToken, {
-          //   headers: {
-          //     "Content-Type": "application/json",
-          //     "User-Agent": 'V2FollowingJS',
-          //     Authorization: `Bearer ${process.env.X_BEARER_TOKEN}`,
-          //   },
-          // });
-        
-          // res.send(JSON.stringify(followingResponse.data));
-
-          
-          const followers = await client.v1.searchUsers(followers);
-          console.log(followers);
-          res.send(JSON.stringify(followers.data));          
-
-      } catch(err) {console.log('Followers Error',  err);}
-      return;
-      // try{
-      //   const followersResponse = await axios.get("https://api.twitter.com/2/users/"+xid+"/following?user.fields=id,name,profile_image_url,username,verified", {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //           "User-Agent": 'V2FollowersJS',
-      //       Authorization: `Bearer ${process.env.X_BEARER_TOKEN}`,
-      //     },
-      //   });
-      
-      //   console.log('Followers Response: ',JSON.stringify(followersResponse.data));
-      //   res.send(JSON.stringify(followersResponse));
-      //   return;
-      // } catch(err) {console.log('Followers Error',  err);}
-  
-    }
-
     const tmp = {
+      e: 'not Real Data',
       t: req.session.at,
       n: req.session.name,
       u: req.session.username,
       i: req.session.xId,
-      f: req.session.xFollowers,
     }
     res.send(JSON.stringify(tmp));
   } else {
