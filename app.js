@@ -64,69 +64,80 @@ const min = 1;
 
 const STATE = "my-state";
 
+const v1AuthLogin = async(req, res) => {
+
+  const callback = process.env.BASE_URL + "/twitter/callback";
+
+   const client = new TwitterApi({appKey: process.env.X_API_KEY, appSecret: process.env.X_API_SECRET})
+    // V1 Auth
+    const authlink = await client.generateAuthLink(callback, {linkMode: 'authorize'});
+    req.session.oauth_token = authlink.oauth_token;
+    req.session.oauth_token_secret = authlink.oauth_token_secret;
+    res.redirect(authlink.url);    
+}
+
+const v1CallBack = async (req, res) => {
+
+  const { oauth_token, oauth_verifier } = req.query;    
+  const { oauth_token_secret } = req.session;
+
+  if (!oauth_token || !oauth_verifier || !oauth_token_secret) {        
+    return res.status(400).send('You denied the app or your session expired!' + oauth_token + ' ' + oauth_verifier +' ' + oauth_token_secret);
+  }
+
+  // Obtain the persistent tokens
+  // Create a client from temporary tokens
+  const client = new TwitterApi({
+    appKey: process.env.X_API_KEY,
+    appSecret: process.env.X_API_SECRET,
+    accessToken: oauth_token,
+    accessSecret: oauth_token_secret,
+  });
+
+
+  await client.login(oauth_verifier)
+    .then(async ({ client: loggedClient, accessToken, accessSecret }) => {          
+        req.session.at = accessToken;
+        req.session.ats = accessSecret;
+        let userResponse = await loggedClient.currentUser();
+
+        tmp = {
+          t: req.session.at,
+          s: req.session.ats,
+          i: userResponse.id,
+          n: userResponse.name,
+          u: userResponse.screen_name,
+          fol_cnt: userResponse.followers_count,
+          friend_cnt: userResponse.friends_count,
+          created_at: userResponse.created_at,
+          x_img: userResponse.profile_image_url,
+          verified: userResponse.verified,
+          private: userResponse.protected,
+          total_x_msg: userResponse.statuses_count
+        }
+        
+    })
+    .catch(() => res.status(403).send('Invalid verifier or access tokens!'));
+}
+
+
+
 app.get("/twitter/callback", async function (req, res) {
   try {
     let tmp;
       // fresh login
-      const { code, state, oauth_token, oauth_verifier } = req.query;    
-      const { oauth_token_secret } = req.session;
-
-
-      // v1 version 
-
-      // if (!oauth_token || !oauth_verifier || !oauth_token_secret) {        
-      //   return res.status(400).send('You denied the app or your session expired!' + oauth_token + ' ' + oauth_verifier +' ' + oauth_token_secret);
-      // }
-
-    //   // Obtain the persistent tokens
-    //   // Create a client from temporary tokens
-    //   const client = new TwitterApi({
-    //     appKey: process.env.X_API_KEY,
-    //     appSecret: process.env.X_API_SECRET,
-    //     accessToken: oauth_token,
-    //     accessSecret: oauth_token_secret,
-    //   });
-
-
-
-    // await client.login(oauth_verifier)
-    //   .then(async ({ client: loggedClient, accessToken, accessSecret }) => {
-    //     // loggedClient is an authenticated client in behalf of some user
-    //     // Store accessToken & accessSecret somewhere
-          
-    //       req.session.at = accessToken;
-    //       req.session.ats = accessSecret;
-    //       let userResponse = await loggedClient.currentUser();
-
-    //       tmp = {
-    //         t: req.session.at,
-    //         s: req.session.ats,
-    //         i: userResponse.id,
-    //         n: userResponse.name,
-    //         u: userResponse.screen_name,
-    //         fol_cnt: userResponse.followers_count,
-    //         friend_cnt: userResponse.friends_count,
-    //         created_at: userResponse.created_at,
-    //         x_img: userResponse.profile_image_url,
-    //         verified: userResponse.verified,
-    //         private: userResponse.protected,
-    //         total_x_msg: userResponse.statuses_count
-    //       }
-          
-    //   })
-    //   .catch(() => res.status(403).send('Invalid verifier or access tokens!'));
-
-      // endof V1 oauth Stuff
+      const { code, state } = req.query;    
 
       // V2 Stuff
       const accessToken = (await authClient.requestAccessToken(code)).token.access_token;
       req.session.at = accessToken;
-      const userResponse = await axios.get("https://api.twitter.com/2/users/me", {
+      const userResponse = await axios.get("https://api.twitter.com/2/users/me?user.fields=verified,verified_type,profile_image_url,public_metrics,id,username,name,created_at&expansions=pinned_tweet_id&tweet.fields=author_id,created_at", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
         });
+    
 
       console.log(userResponse.data.data);
       tmp = {
@@ -234,17 +245,7 @@ app.get("/twitter/login", async function (req, res) {
     res.redirect('/twitter/callback')  
   } else {
 
-    const callback = process.env.BASE_URL + "/twitter/callback";
-    req.session.loginS = true;
-
-    // const client = new TwitterApi({appKey: process.env.X_API_KEY, appSecret: process.env.X_API_SECRET})
-    // // V1 Auth
-    // const authlink = await client.generateAuthLink(callback, {linkMode: 'authorize'});
-    // req.session.oauth_token = authlink.oauth_token;
-    // req.session.oauth_token_secret = authlink.oauth_token_secret;
-    // res.redirect(authlink.url);
-
-    // // V2 Auth
+    // V2 Auth
     const authUrl = authClient.generateAuthURL({
       state: STATE,
       code_challenge_method: "s256",
