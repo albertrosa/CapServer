@@ -326,8 +326,8 @@ app.get('/twitter/follows', async function (req, res){
   const { xt, xs, xid, follows, search, followers, tweets, rid } = req.query;    
 
   if (req.session.userId || xt) {
-    req.session.search
-    req.session.searchResponse;
+    console.log(req.session.search);
+    console.log(req.session.searchResponse);
 
     if (search)  {
       try {
@@ -341,7 +341,7 @@ app.get('/twitter/follows', async function (req, res){
                 Authorization: `Bearer ${xt}`,
               },
             });
-            console.log(searchResponse.data);
+            console.log("from X");
 
             req.session.search  = search 
             req.session.searchResponse = searchResponse.data
