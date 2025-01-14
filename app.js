@@ -326,20 +326,30 @@ app.get('/twitter/follows', async function (req, res){
   const { xt, xs, xid, follows, search, followers, tweets, rid } = req.query;    
 
   if (req.session.userId || xt) {
-    
+    req.session.search
+    req.session.searchResponse;
 
     if (search)  {
       try {
           //  v2 Auth Pattern
-          const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query="+search+"&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name&max_results=100", {
-            headers: {
-              "User-Agent": "v2RecentSearchJS",
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${xt}`,
-            },
-          });
-          console.log(searchResponse.data);
-          res.send(JSON.stringify(searchResponse.data));
+
+          if (req.session.search != search || req.session.searchResponse == null) {
+            const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query="+search+"&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name&max_results=100", {
+              headers: {
+                "User-Agent": "v2RecentSearchJS",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${xt}`,
+              },
+            });
+            console.log(searchResponse.data);
+
+            req.session.search  = search 
+            req.session.searchResponse = searchResponse.data
+          } else {
+            console.log("Loading from Session");
+          }
+
+          res.send(JSON.stringify(req.session.searchResponse));
 
         } catch(err) {console.log('Me Error', err);}     
         return; 
