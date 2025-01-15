@@ -325,7 +325,7 @@ app.get('/twitter/follows', async function (req, res){
 
   const { xt, xs, xid, follows, search, followers, tweets, rid } = req.query;    
 
-  if (req.session.userId || xt) {
+  if (req.session.userId || xt) {    
     console.log(req.session.search);
     console.log(req.session.searchResponse);
 
@@ -350,8 +350,10 @@ app.get('/twitter/follows', async function (req, res){
           }
 
           res.send(JSON.stringify(req.session.searchResponse));
+          return
 
-        } catch(err) {console.log('Me Error', err);}     
+        } catch(err) {console.log('Me Error', err);} 
+        res.send(JSON.stringify({error: 'X SEARCH ERROR'}));    
         return; 
     }
 
