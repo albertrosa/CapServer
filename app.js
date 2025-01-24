@@ -39,6 +39,8 @@ app.use(session({
 }))
 
 const beefDap = process.env.BEEF_URI;
+const max = 100;
+const min = 1;
 
 const authClient = new auth.OAuth2User({
   client_id: process.env.X_ACCOUNT,
@@ -48,15 +50,13 @@ const authClient = new auth.OAuth2User({
 });
 
 
-const auth1Option = {
-  api_key: process.env.X_API_SECRET || "",
-  api_secret_key: process.env.X_API_KEY || "",
-  access_token: process.env.X_ACCESS_TOKEN || "",
-  access_token_secret: process.env.X_ACCESS_SECRET || "",
-}
+// const auth1Option = {
+//   api_key: process.env.X_API_SECRET || "",
+//   api_secret_key: process.env.X_API_KEY || "",
+//   access_token: process.env.X_ACCESS_TOKEN || "",
+//   access_token_secret: process.env.X_ACCESS_SECRET || "",
+// }
 
-const max = 100;
-const min = 1;
 
 // https://github.com/plhery/node-twitter-api-v2/blob/HEAD/doc/auth.md#user-wide-authentication-flow
 
@@ -323,11 +323,9 @@ app.get('/logout', async function (req, res) {
 
 app.get('/twitter/follows', async function (req, res){
 
-  const { xt, xs, xid, follows, search, followers, tweets, rid } = req.query;    
+  const { xt, xs, xid, users, search } = req.query;    
 
   if (req.session.userId || xt) {    
-    console.log(req.session.search);
-    console.log(req.session.searchResponse);
 
     if (search)  {
       try {
@@ -341,7 +339,53 @@ app.get('/twitter/follows', async function (req, res){
                 Authorization: `Bearer ${xt}`,
               },
             });
-            console.log("from X");
+
+            req.session.search  = search 
+            req.session.searchResponse = searchResponse.data
+          } else {
+            console.log("Loading from Session");
+          }
+
+          res.send(JSON.stringify(req.session.searchResponse));
+          return
+
+        } catch(err) {console.log('Me Error', err);} 
+        res.send(JSON.stringify({error: 'X SEARCH ERROR'}));    
+        return; 
+    }
+
+    const tmp = {
+      e: 'not Real Data',
+      t: req.session.at,
+      n: req.session.name,
+      u: req.session.username,
+      i: req.session.xId,
+    }
+    res.send(JSON.stringify(tmp));
+  } else {
+    res.send("LOGIN");
+  }  
+});
+
+
+app.get('/twitter/users', async function (req, res){
+
+  const { xt, xs, xid, users, search } = req.query;    
+
+  if (req.session.userId || xt) {    
+
+    if (search)  {
+      try {
+          //  v2 Auth Pattern
+
+          if (req.session.search != search || req.session.searchResponse == null) {
+            const searchResponse = await axios.get("https://api.x.com/2/users/by?usernames="+users+"&user.fields=created_at,name,id,profile_image_url,public_metics,username,verified,verified_followers_count&max_results=100", {
+              headers: {
+                "User-Agent": "v2UsersByJS",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${xt}`,
+              },
+            });
 
             req.session.search  = search 
             req.session.searchResponse = searchResponse.data
