@@ -379,7 +379,11 @@ app.get('/twitter/users', async function (req, res){
           //  v2 Auth Pattern
 
           if (req.session.search != search || req.session.searchResponse == null) {
-            const searchResponse = await axios.get("https://api.x.com/2/users/by?usernames="+users+"&user.fields=created_at,name,id,profile_image_url,public_metics,username,verified,verified_followers_count&max_results=100", {
+            
+            const searchResponse = await axios.get("https://api.x.com/2/users/by?usernames="+users
+             +"&user.fields=created_at,name,id,profile_image_url,public_metics,username,verified,verified_type", {
+
+
               headers: {
                 "User-Agent": "v2UsersByJS",
                 "Content-Type": "application/json",
