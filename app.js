@@ -374,7 +374,7 @@ app.get('/twitter/users', async function (req, res){
 
   if (req.session.userId || xt) {    
 
-    if (search)  {
+    if (users)  {
       try {
           //  v2 Auth Pattern
 
