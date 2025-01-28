@@ -12,30 +12,37 @@
 
 const { TwitterApi } = require("twitter-api-v2");
 const { Client, auth } = require("twitter-api-sdk");
-
-
-// const {oAuth1a} =  require("twitter-v1-oauth");
-
 const express = require("express");
 const isMobile = require('is-mobile');
 const axios = require("axios");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const session = require('express-session');
+const MySQLStore = require("express-mysql-session")(session);
 
+const mysql_options = {
+	host:  process.env.DB_HOST,
+	port: process.env.DB_PORT,
+	user: process.env.DB_USER,
+	password: process.env.DB_PASS,
+	database: process.env.DB_DATABASE,
+  createDatabaseTable:true,
+}
 
-
-let accessToken = "";
+const sessionStore = new MySQLStore(mysql_options);
 dotenv.config();
-
 const app = express();
 app.use(cors());
 
+
+//12 hours reset
 app.use(session({
+  key: 'cap_oracle_session',
   secret: process.env.session,
+  store: sessionStore,
   resave: false,
   saveUninitialized: false, 
-  cookie: {secured: process.env.session_secured}
+  cookie: {secured: process.env.session_secured, maxAge:43200000 }
 }))
 
 const beefDap = process.env.BEEF_URI;
@@ -49,103 +56,7 @@ const authClient = new auth.OAuth2User({
   scopes: ["tweet.read", "users.read"],
 });
 
-
-// const auth1Option = {
-//   api_key: process.env.X_API_SECRET || "",
-//   api_secret_key: process.env.X_API_KEY || "",
-//   access_token: process.env.X_ACCESS_TOKEN || "",
-//   access_token_secret: process.env.X_ACCESS_SECRET || "",
-// }
-
-
-// https://github.com/plhery/node-twitter-api-v2/blob/HEAD/doc/auth.md#user-wide-authentication-flow
-
-
-
 const STATE = "my-state";
-
-const v1AuthLogin = async(req, res) => {
-
-  const callback = process.env.BASE_URL + "/twitter/callback";
-
-   const client = new TwitterApi({appKey: process.env.X_API_KEY, appSecret: process.env.X_API_SECRET})
-    // V1 Auth
-    const authlink = await client.generateAuthLink(callback, {linkMode: 'authorize'});
-    req.session.oauth_token = authlink.oauth_token;
-    req.session.oauth_token_secret = authlink.oauth_token_secret;
-    res.redirect(authlink.url);    
-}
-
-const v1CallBack = async (req, res) => {
-
-  const { oauth_token, oauth_verifier } = req.query;    
-  const { oauth_token_secret } = req.session;
-
-  if (!oauth_token || !oauth_verifier || !oauth_token_secret) {        
-    return res.status(400).send('You denied the app or your session expired!' + oauth_token + ' ' + oauth_verifier +' ' + oauth_token_secret);
-  }
-
-  // Obtain the persistent tokens
-  // Create a client from temporary tokens
-  const client = new TwitterApi({
-    appKey: process.env.X_API_KEY,
-    appSecret: process.env.X_API_SECRET,
-    accessToken: oauth_token,
-    accessSecret: oauth_token_secret,
-  });
-
-
-  await client.login(oauth_verifier)
-    .then(async ({ client: loggedClient, accessToken, accessSecret }) => {          
-        req.session.at = accessToken;
-        req.session.ats = accessSecret;
-        let userResponse = await loggedClient.currentUser();
-
-        tmp = {
-          t: req.session.at,
-          s: req.session.ats,
-          i: userResponse.id,
-          n: userResponse.name,
-          u: userResponse.screen_name,
-          fol_cnt: userResponse.followers_count,
-          friend_cnt: userResponse.friends_count,
-          created_at: userResponse.created_at,
-          x_img: userResponse.profile_image_url,
-          verified: userResponse.verified,
-          private: userResponse.protected,
-          total_x_msg: userResponse.statuses_count
-        }
-        
-    })
-    .catch(() => res.status(403).send('Invalid verifier or access tokens!'));
-}
-
-const v1Search = async(req, res) => {
-  const { xt, xs, xid, follows, search, followers, tweets, rid } = req.query;    
-  let client; 
-
-    if (req.session.at && req.session.ats) {
-      client = new TwitterApi({
-        appKey: process.env.X_API_KEY,
-        appSecret: process.env.X_API_SECRET,
-        accessToken: req.session.at,
-        accessSecret: req.session.ats,
-      });
-    } else {
-      client = new TwitterApi({
-        appKey: process.env.X_API_KEY,
-        appSecret: process.env.X_API_SECRET,
-        accessToken: xt,
-        accessSecret: xs,
-      });
-    }
-    client.readOnly;
-
-  const searchResponse = await client.search(search);
-  console.log(searchResponse.data);
-  res.send(JSON.stringify(searchResponse.data));
-}
-
 
 app.get("/twitter/callback", async function (req, res) {
   try {
@@ -163,7 +74,6 @@ app.get("/twitter/callback", async function (req, res) {
           },
         });
     
-      console.log(userResponse.data.data);
       tmp = {
         t: req.session.at,
         n: userResponse.data.data.name,
@@ -244,7 +154,7 @@ app.get("/twitter/callback", async function (req, res) {
        `);
   }
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 });
 
@@ -271,8 +181,9 @@ app.get("/twitter/revoke", async function (req, res) {
     const response = await authClient.revokeAccessToken();
     res.send(response);
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
+  res.send('OK');
 });
 
 app.get('/health', function(req, res) {
@@ -323,98 +234,78 @@ app.get('/logout', async function (req, res) {
 
 app.get('/twitter/follows', async function (req, res){
 
-  const { xt, xs, xid, users, search } = req.query;    
+  const { xt, search } = req.query;
 
-  if (req.session.userId || xt) {    
+  if (( req.session.at || xt)  && req.sess[search] == null   ) {    
 
-    if (search)  {
-      try {
-          //  v2 Auth Pattern
+    try {
+      //  v2 Auth Pattern          
+        const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query="+search+"&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name&max_results=100", {
+          headers: {
+            "User-Agent": "v2RecentSearchJS",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${req.session.at}`,
+          },
+        });
+      
+      req.sess[search] == JSON.stringify(searchResponse.data);
+      res.send(JSON.stringify(req.session.searchResponse));
+      return;
 
-          if (req.session.search != search || req.session.searchResponse == null) {
-            const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query="+search+"&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name&max_results=100", {
-              headers: {
-                "User-Agent": "v2RecentSearchJS",
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${xt}`,
-              },
-            });
+    } catch(err) {console.error('Search Error', err);} 
+    res.send(JSON.stringify({error: 'X SEARCH ERROR: API Error', login: 1}));    
+    return;         
+  } else if ( req.sess[search] != null) {
+      console.info("Using Session");
+      res.send(req.sess[search]);    
+  } else {    
+    res.send(JSON.stringify({error: 'X SEARCH ERROR: Error', login: 0}));    
+  }
+}
 
-            req.session.search  = search 
-            req.session.searchResponse = searchResponse.data
-          } else {
-            console.log("Loading from Session");
-          }
 
-          res.send(JSON.stringify(req.session.searchResponse));
-          return
 
-        } catch(err) {console.log('Me Error', err);} 
-        res.send(JSON.stringify({error: 'X SEARCH ERROR'}));    
-        return; 
-    }
-
-    const tmp = {
-      e: 'not Real Data',
-      t: req.session.at,
-      n: req.session.name,
-      u: req.session.username,
-      i: req.session.xId,
-    }
-    res.send(JSON.stringify(tmp));
-  } else {
-    res.send("LOGIN");
-  }  
-});
-
+);
 
 app.get('/twitter/users', async function (req, res){
 
-  const { xt, xs, xid, users, search } = req.query;    
+  const { users } = req.query;    
 
-  if (req.session.userId || xt) {    
+  if (req.session.xt && req.session[users] == null) {    
 
     if (users)  {
       try {
           //  v2 Auth Pattern
+          const searchResponse = await axios.get("https://api.x.com/2/users/by?usernames="+users
+            +"&user.fields=created_at,name,id,profile_image_url"
+            ,{
+            headers: {
+              "User-Agent": "v2UsersByJS",
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${xt}`,
+            },
+          });
 
-          if (req.session.search != search || req.session.searchResponse == null) {
-            
-            const searchResponse = await axios.get("https://api.x.com/2/users/by?usernames="+users
-              +"&user.fields=created_at,name,id,profile_image_url"
-             ,{
-              headers: {
-                "User-Agent": "v2UsersByJS",
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${xt}`,
-              },
-            });
+          req.sess[users] = JSON.stringify(searchResponse.data);
 
-            req.session.search  = search 
-            req.session.searchResponse = searchResponse.data
-          } else {
-            console.log("Loading from Session");
-          }
-
-          res.send(JSON.stringify(req.session.searchResponse));
+          res.send(JSON.stringify(searchResponse.data));
           return
 
         } catch(err) {console.log('Me Error', err);} 
-        res.send(JSON.stringify({error: 'X SEARCH ERROR'}));    
+        res.send(JSON.stringify({error: 'X SEARCH ERROR: Login', login: 1}));    
         return; 
+    } else {
+      res.send(JSON.stringify({error: 'X SEARCH ERROR: NO Params', login: 0}));    
+      return;
     }
-
-    const tmp = {
-      e: 'not Real Data',
-      t: req.session.at,
-      n: req.session.name,
-      u: req.session.username,
-      i: req.session.xId,
-    }
-    res.send(JSON.stringify(tmp));
+    
+  } else if (req.session[users] != null) {
+    console.log("loading from cache");
+    // saved as JSON STRING
+    res.send( req.sess[users]);    
   } else {
-    res.send("LOGIN");
-  }  
+    res.send(JSON.stringify({error: 'X SEARCH ERROR: API Error', login: 1}));    
+  } 
 });
 
 app.use(
@@ -423,6 +314,6 @@ app.use(
     )
 );
 
-app.listen(8080, () => {
+app.listen(3000, () => {  
   console.log(`Go here to login: ${beefDap}`);
 });

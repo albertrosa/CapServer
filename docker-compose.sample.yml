@@ -1,0 +1,50 @@
+version: "3.7"
+
+services:
+  capserver:
+    build: . 
+    restart: always
+    ports: 
+      - "3000:3000"
+      - "8080:8080"
+    depends_on:    
+      - db
+    links:    
+      - db
+    environment:
+      DB_HOST: 'db'
+      DB_USER: 'root'
+      DB_PASS:  'root'
+      DB_DATABASE: 'mydb'     
+      DB_PORT: '3306'
+      session: 'localSession'
+      session_secured: true
+      BEEF_URI: https://wagerfe-deployed.onrender.com
+      BASE_URL: https://capserver-3eyf.onrender.com      
+      X_ACCOUNT: <X_ACCOUNT>
+      X_SECRET: <X_SECRET>     
+
+  
+  db:
+    image: mysql:latest
+    ports: 
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: capserver
+      MYSQL_PASSWORD: captain
+      MYSQL_ROOT_HOST: '%'
+    expose:
+      - 3306
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    restart: always
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "8181:80"

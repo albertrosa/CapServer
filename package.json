@@ -1,7 +1,7 @@
 {
-  "name": "beefnodeserver",
+  "name": "capserver",
   "version": "1.0.0",
-  "description": "Identity Server for Beef",
+  "description": "Oracle For CAPATAINFUN",
   "main": "app.js",
   "scripts": {
     "test": "test",
@@ -14,9 +14,11 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "express-mysql-session": "^3.0.3",
     "express-session": "^1.18.1",
     "got": "^14.4.5",
     "is-mobile": "^5.0.0",
+    "mysql2-promise": "^0.1.4",
     "needle": "^3.3.1",
     "oauth-1.0a": "^2.2.6",
     "passport": "^0.7.0",
@@ -24,5 +26,6 @@
     "twitter-api-sdk": "^1.2.1",
     "twitter-api-v2": "^1.18.2",
     "twitter-v1-oauth": "^1.0.15"
+    
   }
 }
