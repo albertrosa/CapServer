@@ -270,7 +270,7 @@ app.get('/twitter/users', async function (req, res){
             },
           });
 
-          req.sess[users] = JSON.stringify(searchResponse.data);
+          req.session[users] = JSON.stringify(searchResponse.data);
 
           res.send(JSON.stringify(searchResponse.data));
           return;
