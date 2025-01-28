@@ -156,6 +156,7 @@ app.get("/twitter/callback", async function (req, res) {
   }
   } catch (error) {
     console.error(error);
+    res.send({error: 'X CALLBACK ERROR: Login', login: 1})
   }
 });
 
@@ -183,7 +184,9 @@ app.get('/health', function(req, res) {
 });
 
 app.get("/login", async function(req, res){  
-  res.send('OK');
+  const { xt } = req.query;  
+  req.session.at = xt;  
+  res.send(`OK`);
 });
 
 app.get('/status', async function (req, res) {
