@@ -182,14 +182,7 @@ app.get('/health', function(req, res) {
   res.send(`OK`);
 });
 
-app.get("/login", async function(req, res){
-  req.session.userId =  Math.ceil(Math.random() * 100)
-  req.session.name = 'not me';
-  req.session.username = '@not_me';
-  req.session.at = 'token';
-  req.session.xUsername = 'XusName';
-  req.session.xId = '123213';
-  req.session.xFollowers = Math.ceil(Math.random() * (max - min) + min);
+app.get("/login", async function(req, res){  
   res.send('OK');
 });
 
