@@ -67,6 +67,7 @@ app.get("/twitter/callback", async function (req, res) {
       // V2 Stuff
       const accessToken = (await authClient.requestAccessToken(code)).token.access_token;
       req.session.at = accessToken;
+      console.log('Session created');
       const userResponse = await axios.get("https://api.twitter.com/2/users/me?user.fields=verified,verified_type,profile_image_url,public_metrics,id,username,name,created_at&expansions=pinned_tweet_id&tweet.fields=author_id,created_at", {
           headers: {
             "Content-Type": "application/json",
@@ -261,6 +262,9 @@ app.get('/twitter/follows', async function (req, res){
 app.get('/twitter/users', async function (req, res){
 
   const { users } = req.query;    
+
+  console.log(users);
+  console.log(req.session);
 
   if (req.session.xt && req.session[users] == null) {    
 
