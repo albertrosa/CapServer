@@ -315,5 +315,6 @@ app.use(
 );
 
 app.listen(3000, () => {  
+  console.log(mysql_options);
   console.log(`Go here to login: ${beefDap}`);
 });
