@@ -273,18 +273,22 @@ app.get('/twitter/users', async function (req, res){
             headers: {
               "User-Agent": "v2UsersByJS",
               "Content-Type": "application/json",
-              Authorization: `Bearer ${xt}`,
+              Authorization: `Bearer ${req.session.xt}`,
             },
           });
 
           req.sess[users] = JSON.stringify(searchResponse.data);
 
           res.send(JSON.stringify(searchResponse.data));
-          return
+          return;
 
-        } catch(err) {console.log('Me Error', err);} 
-        res.send(JSON.stringify({error: 'X SEARCH ERROR: Login', login: 1}));    
-        return; 
+        } catch(err) {
+          console.log(err);
+          res.send(JSON.stringify({error: 'X SEARCH ERROR: Login', login: 1}));    
+          return; 
+
+        } 
+        
     } else {
       res.send(JSON.stringify({error: 'X SEARCH ERROR: NO Params', login: 0}));    
       return;
@@ -305,7 +309,6 @@ app.use(
     )
 );
 
-app.listen(3000, () => {  
-  console.log(mysql_options);
+app.listen(3000, () => {    
   console.log(`Go here to login: ${beefDap}`);
 });
