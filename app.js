@@ -290,7 +290,7 @@ app.get('/twitter/users', async function (req, res){
   } else if (req.session[users] != null) {
     console.log("loading from cache");
     // saved as JSON STRING
-    res.send( req.sess[users]);    
+    res.send( req.session[users]);    
   } else {
     res.send(JSON.stringify({error: 'X SEARCH ERROR: API Error', login: 1}));    
   } 
