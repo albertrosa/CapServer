@@ -159,21 +159,12 @@ app.get("/twitter/callback", async function (req, res) {
 });
 
 app.get("/twitter/login", async function (req, res) {
-  
-  if (req.session.userId) {
-    res.redirect('/twitter/callback')  
-  } else {
-
     // V2 Auth
-    const authUrl = authClient.generateAuthURL({
-      state: STATE,
-      code_challenge_method: "s256",
-    });
-    res.redirect(authUrl);
-  }
-
-
-
+  const authUrl = authClient.generateAuthURL({
+    state: STATE,
+    code_challenge_method: "s256",
+  });
+  res.redirect(authUrl);
 });
 
 app.get("/twitter/revoke", async function (req, res) {
