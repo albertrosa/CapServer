@@ -190,11 +190,7 @@ app.get('/status', async function (req, res) {
   
   if (req.session.userId) {
     const tmp = {
-      t: req.session.at,
-      n: req.session.name,
-      u: req.session.username,
-      i: req.session.xId,
-      f: req.session.xFollowers
+      t: req.session.at,      
     }
     res.send(JSON.stringify(tmp));
   } else {
@@ -259,7 +255,7 @@ app.get('/twitter/users', async function (req, res){
   console.log(users);
   console.log(req.session);
 
-  if (req.session.xt && req.session[users] == null) {    
+  if (req.session.at && req.session[users] == null) {    
 
     if (users)  {
       try {
@@ -270,7 +266,7 @@ app.get('/twitter/users', async function (req, res){
             headers: {
               "User-Agent": "v2UsersByJS",
               "Content-Type": "application/json",
-              Authorization: `Bearer ${req.session.xt}`,
+              Authorization: `Bearer ${req.session.at}`,
             },
           });
 
