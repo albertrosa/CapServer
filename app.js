@@ -265,6 +265,8 @@ app.get('/twitter/users', async function (req, res){
 
     if (users)  {
       try {
+
+        if (users.length > 1) {
           //  v2 Auth Pattern
           const searchResponse = await axios.get("https://api.x.com/2/users/by?usernames="+users
             +"&user.fields=created_at,name,id,profile_image_url"
@@ -279,14 +281,35 @@ app.get('/twitter/users', async function (req, res){
           req.session[users] = JSON.stringify(searchResponse.data);
 
           res.send(JSON.stringify(searchResponse.data));
-          return;
+          return;      
+      } else {
+        // Single Username flow
 
-        } catch(err) {
-          console.log(err);
-          res.send(JSON.stringify({error: 'X SEARCH ERROR: Login', login: 1}));    
-          return; 
+        //  v2 Auth Pattern
+        const searchResponse = await axios.get("https://api.x.com/2/users/by/username/"+users[0]
+          +"&user.fields=created_at,name,id,profile_image_url"
+          ,{
+          headers: {
+            "User-Agent": "v2UsersByJS",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${req.session.at}`,
+          },
+        });
 
-        } 
+
+        console.log(searchResponse);
+        req.session[users] = JSON.stringify(searchResponse.data);
+
+        res.send(JSON.stringify(searchResponse.data));
+        return;      
+
+
+      }
+    } catch(err) {
+      console.log(err);
+      res.send(JSON.stringify({error: 'X SEARCH ERROR: Login', login: 1}));    
+      return; 
+    } 
         
     } else {
       res.send(JSON.stringify({error: 'X SEARCH ERROR: NO Params', login: 0}));    
