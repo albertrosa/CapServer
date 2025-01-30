@@ -266,7 +266,7 @@ app.get('/twitter/users', async function (req, res){
     if (users)  {
       try {
 
-        if (users.length > 1) {
+        if (users.indexOf(',') > 0) {
           //  v2 Auth Pattern
           const searchResponse = await axios.get("https://api.x.com/2/users/by?usernames="+users
             +"&user.fields=created_at,name,id,profile_image_url"
