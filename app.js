@@ -228,7 +228,7 @@ app.get('/twitter/follows', async function (req, res){
           headers: {
             "User-Agent": "v2RecentSearchJS",
             "Content-Type": "application/json",
-            Authorization: `Bearer ${req.session.at}`,
+            Authorization: `Bearer ${xt}`,
           },
         });
       
@@ -237,8 +237,8 @@ app.get('/twitter/follows', async function (req, res){
       return;
 
     } catch(err) {console.error('Search Error', err);} 
-    res.send(JSON.stringify({error: 'X SEARCH ERROR: API Error', login: 1}));    
-    return;         
+      res.send(JSON.stringify({error: 'X SEARCH ERROR: API Error', login: 1}));    
+      return;         
   } else if ( req.session[search] != null) {
       console.info("Using Session");
       res.send(req.session[search]);    
