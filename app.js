@@ -220,7 +220,7 @@ app.get('/twitter/follows', async function (req, res){
 
   const { xt, search } = req.query;
 
-  if (( req.session.at || xt)  && req.sess[search] == null   ) {    
+  if (( req.session.at || xt)  && req.session[search] == null   ) {    
 
     try {
       //  v2 Auth Pattern          
@@ -232,16 +232,16 @@ app.get('/twitter/follows', async function (req, res){
           },
         });
       
-      req.sess[search] == JSON.stringify(searchResponse.data);
+      req.session[search] == JSON.stringify(searchResponse.data);
       res.send(JSON.stringify(req.session.searchResponse));
       return;
 
     } catch(err) {console.error('Search Error', err);} 
     res.send(JSON.stringify({error: 'X SEARCH ERROR: API Error', login: 1}));    
     return;         
-  } else if ( req.sess[search] != null) {
+  } else if ( req.session[search] != null) {
       console.info("Using Session");
-      res.send(req.sess[search]);    
+      res.send(req.session[search]);    
   } else {    
     res.send(JSON.stringify({error: 'X SEARCH ERROR: Error', login: 0}));    
   }
@@ -254,9 +254,6 @@ app.get('/twitter/follows', async function (req, res){
 app.get('/twitter/users', async function (req, res){
   const { users, xt } = req.query;    
   
-  console.log(users);
-  console.log(req.session);
-
   if ( (req.session.at || xt) && req.session[users] == null) {    
 
     if (req.session.at == null && xt != null) {
