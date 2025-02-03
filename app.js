@@ -231,7 +231,7 @@ app.get('/twitter/follows', async function (req, res){
             Authorization: `Bearer ${xt}`,
           },
         });
-        console.lo(searchResponse.data)
+        console.log(searchResponse.data)
         res.send(JSON.stringify({"OK": 'OK'}))
       
   //     req.session[search] == JSON.stringify(searchResponse.data);
