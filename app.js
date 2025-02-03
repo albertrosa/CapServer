@@ -222,7 +222,7 @@ app.get('/twitter/follows', async function (req, res){
 
   if (( req.session.at || xt)  && req.session[search] == null   ) {    
 
-    try {
+    // try {
       //  v2 Auth Pattern          
         const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query="+search+"&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name&max_results=100", {
           headers: {
@@ -231,17 +231,19 @@ app.get('/twitter/follows', async function (req, res){
             Authorization: `Bearer ${xt}`,
           },
         });
+        console.lo(searchResponse.data)
+        res.send(JSON.stringify({"OK": 'OK'}))
       
-      req.session[search] == JSON.stringify(searchResponse.data);
-      res.send(JSON.stringify(req.session.searchResponse));
-      return;
+  //     req.session[search] == JSON.stringify(searchResponse.data);
+  //     res.send(JSON.stringify(req.session.searchResponse));
+  //     return;
 
-    } catch(err) {console.error('Search Error', err);} 
-      res.send(JSON.stringify({error: 'X SEARCH ERROR: API Error', login: 1}));    
-      return;         
-  } else if ( req.session[search] != null) {
-      console.info("Using Session");
-      res.send(req.session[search]);    
+  //   } catch(err) {console.error('Search Error', err);} 
+  //     res.send(JSON.stringify({error: 'X SEARCH ERROR: API Error', login: 1}));    
+  //     return;         
+  // } else if ( req.session[search] != null) {
+  //     console.info("Using Session");
+  //     res.send(req.session[search]);    
   } else {    
     res.send(JSON.stringify({error: 'X SEARCH ERROR: Error', login: 0}));    
   }
