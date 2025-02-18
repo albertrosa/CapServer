@@ -42,7 +42,7 @@ app.use(session({
   store: sessionStore,
   resave: false,
   saveUninitialized: false, 
-  cookie: {secured: process.env.session_secured, maxAge:43200000 }
+  cookie: {secured: process.env.session_secured, maxAge:43200000/12 }
 }))
 
 const beefDap = process.env.BEEF_URI;
@@ -89,11 +89,13 @@ app.get("/twitter/callback", async function (req, res) {
         verified_type: userResponse.data.data.verified_type,    
       }
 
-    if (isMobile(req.headers['user-agent'])) {
+      console.log(isMobile(req.headers['user-agent']));
       console.log('mobile response');
       console.log(encodeURIComponent(JSON.stringify(tmp)));
       console.log(JSON.stringify(tmp));
       console.log(tmp);
+
+    if (isMobile(req.headers['user-agent'])) {
       res.send(`
         <html>
         <body>
