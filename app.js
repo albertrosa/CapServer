@@ -90,8 +90,10 @@ app.get("/twitter/callback", async function (req, res) {
       }
 
     if (isMobile(req.headers['user-agent'])) {
-
-      
+      console.log('mobile response');
+      console.log(encodeURIComponent(JSON.stringify(tmp)));
+      console.log(JSON.stringify(tmp));
+      console.log(tmp);
       res.send(`
         <html>
         <body>
@@ -231,8 +233,7 @@ app.get('/twitter/follows', async function (req, res){
             Authorization: `Bearer ${xt}`,
           },
         });      
-      console.log(searchResponse.data);
-      
+        
       req.session[search] == JSON.stringify(searchResponse.data);
       res.send(JSON.stringify(JSON.stringify(searchResponse.data)));
       return;
