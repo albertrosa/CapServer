@@ -89,28 +89,26 @@ app.get("/twitter/callback", async function (req, res) {
         verified_type: userResponse.data.data.verified_type,    
       }
 
-      console.log(isMobile(req.headers['user-agent']));
-      console.log('mobile response');
-      console.log(encodeURIComponent(JSON.stringify(tmp)));
-      console.log(JSON.stringify(tmp));
-      console.log(tmp);
+      console.log(req.headers['user-agent']);      
+      const dat = encodeURIComponent(JSON.stringify(tmp));
+      
 
     if (isMobile(req.headers['user-agent'])) {
       res.send(`
         <html>
         <body>
           <p>Redirection to App</p>        
-          <h1><a href="${beefDap}/t/?i=${encodeURIComponent(JSON.stringify(tmp))}">Not Redirected<a/></h1>
+          <h1><a href="${beefDap}/t/?i=${dat}">Not Redirected<a/></h1>
           
           <script>
             // Pass the access token and status to the parent window
-            window.location.href="${beefDap}/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+            window.location.href="${beefDap}/t/?i=${dat}";
             
 
             // Close the window after a delay
             setTimeout(() => {
               try {
-                window.location.href="${beefDap}/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";            
+                window.location.href="${beefDap}/t/?i=${dat}";            
               } catch(err) {
                 
               }
@@ -132,17 +130,16 @@ app.get("/twitter/callback", async function (req, res) {
               user: ${JSON.stringify(tmp)},
               status: "Login successful" }, "*");
             } catch(err) {
-              window.location.href="${beefDap}/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+              window.location.href="${beefDap}/t/?i=${dat}";
             }
 
-            try {
-              // Temp this is required to evaluate the player auth for testing on Phantom
+            try {              
               window.close();
             } catch(err) {
-              window.location.href="${beefDap}/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+              window.location.href="${beefDap}/t/?i=${dat}";
             }
 
-            window.location.href="${beefDap}/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+            window.location.href="${beefDap}/t/?i=${dat}";
 
             // Close the window after a delay
             setTimeout(() => {
@@ -150,7 +147,7 @@ app.get("/twitter/callback", async function (req, res) {
                 window.close();
               } catch(err) {
                 
-            window.location.href="${beefDap}/t/?i=${encodeURIComponent(JSON.stringify(tmp))}";
+            window.location.href="${beefDap}/t/?i=${dat}";
               }
             }, 3000); // 3 seconds delay
           </script>
