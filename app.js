@@ -22,6 +22,7 @@ const MySQLStore = require("express-mysql-session")(session);
 
 const VERSION = "v0.2.0";
 
+const port = process.env.PORT || 3000;
 const mysql_options = {
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
@@ -291,16 +292,12 @@ app.get('/twitter/users', async function (req, res) {
         const searched = await performUserSearch(users)
         req.session[users] = searched;
         res.send(searched);
-        return;
       } catch (err) {
-        console.error(err);
         res.send(JSON.stringify({ error: 'X SEARCH ERROR: Login', login: 1 }));
-        return;
       }
 
     } else {
       res.send(JSON.stringify({ error: 'X SEARCH ERROR: NO Params', login: 0 }));
-      return;
     }
 
   } else if (req.session[users] != null) {
@@ -313,8 +310,6 @@ app.get('/twitter/users', async function (req, res) {
     const searched = await performUserSearch(users, false);
     req.session[users] = searched;
     res.send(searched);
-
-    res.send(JSON.stringify({ error: 'X SEARCH ERROR: API Error', login: 1 }));
   }
 });
 
@@ -324,6 +319,6 @@ app.use(
   )
 );
 
-app.listen(3000, () => {
+app.listen(port, () => {
   console.log(`Go here to login: ${beefDap}\n${VERSION}`);
 });
