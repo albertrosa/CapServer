@@ -280,13 +280,10 @@ app.get('/twitter/follows', async function (req, res) {
 );
 
 app.get('/twitter/users', async function (req, res) {
-  const { users, xt } = req.query;
+  const { users } = req.query;
 
-  if ((req.session.at || xt) && req.session[users] == null) {
+  if ((req.session.at) && req.session[users] == null) {
 
-    if (req.session.at == null && xt != null) {
-      req.session.at = xt;
-    }
     if (users) {
       try {
         const searched = await performUserSearch(users)
