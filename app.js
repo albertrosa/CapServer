@@ -234,11 +234,6 @@ app.get('/status', async function (req, res) {
 });
 
 app.get('/logout', async function (req, res) {
-  try {
-    await authClient.revokeAccessToken();
-  } catch (error) {
-    console.error(error);
-  }
 
   req.session.destroy((err) => {
     if (err) {
