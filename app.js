@@ -21,12 +21,12 @@ const session = require('express-session');
 const MySQLStore = require("express-mysql-session")(session);
 
 const mysql_options = {
-	host:  process.env.DB_HOST,
-	port: process.env.DB_PORT,
-	user: process.env.DB_USER,
-	password: process.env.DB_PASS,
-	database: process.env.DB_DATABASE,
-  createDatabaseTable:true,
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_DATABASE,
+  createDatabaseTable: true,
 }
 
 const sessionStore = new MySQLStore(mysql_options);
@@ -41,8 +41,8 @@ app.use(session({
   secret: process.env.session,
   store: sessionStore,
   resave: false,
-  saveUninitialized: false, 
-  cookie: {secured: process.env.session_secured, maxAge:43200000/12 }
+  saveUninitialized: false,
+  cookie: { secured: process.env.session_secured, maxAge: 1000 * 60 * 60 * 2 } // 2 Hour session limit to match X API lifetime
 }))
 
 const beefDap = process.env.BEEF_URI;
@@ -61,37 +61,37 @@ const STATE = "my-state";
 app.get("/twitter/callback", async function (req, res) {
   try {
     let tmp;
-      // fresh login
-      const { code, state } = req.query;    
+    // fresh login
+    const { code, state } = req.query;
 
-      // V2 Stuff
-      const accessToken = (await authClient.requestAccessToken(code)).token.access_token;
-      req.session.at = accessToken;
-      console.log('Session created');
-      const userResponse = await axios.get("https://api.twitter.com/2/users/me?user.fields=verified,verified_type,profile_image_url,public_metrics,id,username,name,created_at&expansions=pinned_tweet_id&tweet.fields=author_id,created_at", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-    
-      tmp = {
-        t: req.session.at,
-        n: userResponse.data.data.name,
-        u: userResponse.data.data.username,
-        i: userResponse.data.data.id,        
-        x_img: userResponse.data.data.profile_image_url,
-        created_at:userResponse.data.data.created_at,
-        s:null,
-        fol_cnt: userResponse.data.data.public_metrics.followers_count,
-        friend_cnt: userResponse.data.data.public_metrics.following_count,
-        verified: userResponse.data.data.verified,
-        verified_type: userResponse.data.data.verified_type,    
-      }
+    // V2 Stuff
+    const accessToken = (await authClient.requestAccessToken(code)).token.access_token;
+    req.session.at = accessToken;
+    console.log('Session created');
+    const userResponse = await axios.get("https://api.twitter.com/2/users/me?user.fields=verified,verified_type,profile_image_url,public_metrics,id,username,name,created_at&expansions=pinned_tweet_id&tweet.fields=author_id,created_at", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-      console.log(req.headers['user-agent']);      
-      const dat = encodeURIComponent(JSON.stringify(tmp));
-      
+    tmp = {
+      t: req.session.at,
+      n: userResponse.data.data.name,
+      u: userResponse.data.data.username,
+      i: userResponse.data.data.id,
+      x_img: userResponse.data.data.profile_image_url,
+      created_at: userResponse.data.data.created_at,
+      s: null,
+      fol_cnt: userResponse.data.data.public_metrics.followers_count,
+      friend_cnt: userResponse.data.data.public_metrics.following_count,
+      verified: userResponse.data.data.verified,
+      verified_type: userResponse.data.data.verified_type,
+    }
+
+    console.log(req.headers['user-agent']);
+    const dat = encodeURIComponent(JSON.stringify(tmp));
+
 
     if (isMobile(req.headers['user-agent'])) {
       res.send(`
@@ -154,15 +154,15 @@ app.get("/twitter/callback", async function (req, res) {
         </body>
         </html>
        `);
-  }
+    }
   } catch (error) {
     console.error(error);
-    res.send({error: 'X CALLBACK ERROR: Login', login: 1})
+    res.send({ error: 'X CALLBACK ERROR: Login', login: 1 })
   }
 });
 
 app.get("/twitter/login", async function (req, res) {
-    // V2 Auth
+  // V2 Auth
   const authUrl = authClient.generateAuthURL({
     state: STATE,
     code_challenge_method: "s256",
@@ -180,26 +180,26 @@ app.get("/twitter/revoke", async function (req, res) {
   res.send('OK');
 });
 
-app.get('/health', function(req, res) {
+app.get('/health', function (req, res) {
   res.send(`OK`);
 });
 
-app.get("/login", async function(req, res){  
-  const { xt } = req.query;  
-  req.session.at = xt;  
+app.get("/login", async function (req, res) {
+  const { xt } = req.query;
+  req.session.at = xt;
   res.send(`OK`);
 });
 
 app.get('/status', async function (req, res) {
-  
+
   if (req.session.userId) {
     const tmp = {
-      t: req.session.at,      
+      t: req.session.at,
     }
     res.send(JSON.stringify(tmp));
   } else {
     res.send("LOGIN");
-  }  
+  }
 });
 
 app.get('/logout', async function (req, res) {
@@ -217,34 +217,34 @@ app.get('/logout', async function (req, res) {
   });
 });
 
-app.get('/twitter/follows', async function (req, res){
+app.get('/twitter/follows', async function (req, res) {
 
   const { xt, search } = req.query;
 
-  if (( req.session.at || xt)  && req.session[search] == null   ) {    
+  if ((req.session.at || xt) && req.session[search] == null) {
 
     try {
       //  v2 Auth Pattern          
-        const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query="+search+"&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name&max_results=100", {
-          headers: {
-            "User-Agent": "v2RecentSearchJS",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${xt}`,
-          },
-        });      
-        
+      const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query=" + search + "&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name&max_results=100", {
+        headers: {
+          "User-Agent": "v2RecentSearchJS",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${xt}`,
+        },
+      });
+
       req.session[search] == JSON.stringify(searchResponse.data);
       res.send(JSON.stringify(JSON.stringify(searchResponse.data)));
       return;
 
-    } catch(err) {console.error('Search Error', err);} 
-      res.send(JSON.stringify({error: 'X SEARCH ERROR: API Error', login: 1}));    
-      return;         
-  } else if ( req.session[search] != null) {
-      console.info("Using Session");
-      res.send(req.session[search]);    
-  } else {    
-    res.send(JSON.stringify({error: 'X SEARCH ERROR: Error', login: 0}));    
+    } catch (err) { console.error('Search Error', err); }
+    res.send(JSON.stringify({ error: 'X SEARCH ERROR: API Error', login: 1 }));
+    return;
+  } else if (req.session[search] != null) {
+    console.info("Using Session");
+    res.send(req.session[search]);
+  } else {
+    res.send(JSON.stringify({ error: 'X SEARCH ERROR: Error', login: 0 }));
   }
 }
 
@@ -252,83 +252,83 @@ app.get('/twitter/follows', async function (req, res){
 
 );
 
-app.get('/twitter/users', async function (req, res){
-  const { users, xt } = req.query;    
-  
-  if ( (req.session.at || xt) && req.session[users] == null) {    
+app.get('/twitter/users', async function (req, res) {
+  const { users, xt } = req.query;
+
+  if ((req.session.at || xt) && req.session[users] == null) {
 
     if (req.session.at == null && xt != null) {
-        req.session.at = xt;
+      req.session.at = xt;
     }
 
-    if (users)  {
+    if (users) {
       try {
 
         if (users.indexOf(',') > 0) {
           //  v2 Auth Pattern
-          const searchResponse = await axios.get("https://api.x.com/2/users/by?usernames="+users
-            +"&user.fields=created_at,name,id,profile_image_url"
-            ,{
-            headers: {
-              "User-Agent": "v2UsersByJS",
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${req.session.at}`,
-            },
-          });
+          const searchResponse = await axios.get("https://api.x.com/2/users/by?usernames=" + users
+            + "&user.fields=created_at,name,id,profile_image_url"
+            , {
+              headers: {
+                "User-Agent": "v2UsersByJS",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${req.session.at}`,
+              },
+            });
 
           req.session[users] = JSON.stringify(searchResponse.data);
 
           res.send(JSON.stringify(searchResponse.data));
-          return;      
-      } else {
-        // Single Username flow
+          return;
+        } else {
+          // Single Username flow
 
-        //  v2 Auth Pattern
-        const searchResponse = await axios.get("https://api.x.com/2/users/by/username/"+users
-          +"?user.fields=created_at,name,id,profile_image_url"
-          ,{
-          headers: {
-            "User-Agent": "v2UsersByJS",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${req.session.at}`,
-          },
-        });
-
-
-        console.log(searchResponse);
-        req.session[users] = JSON.stringify(searchResponse.data);
-
-        res.send(JSON.stringify(searchResponse.data));
-        return;      
+          //  v2 Auth Pattern
+          const searchResponse = await axios.get("https://api.x.com/2/users/by/username/" + users
+            + "?user.fields=created_at,name,id,profile_image_url"
+            , {
+              headers: {
+                "User-Agent": "v2UsersByJS",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${req.session.at}`,
+              },
+            });
 
 
+          console.log(searchResponse);
+          req.session[users] = JSON.stringify(searchResponse.data);
+
+          res.send(JSON.stringify(searchResponse.data));
+          return;
+
+
+        }
+      } catch (err) {
+        console.log(err);
+        res.send(JSON.stringify({ error: 'X SEARCH ERROR: Login', login: 1 }));
+        return;
       }
-    } catch(err) {
-      console.log(err);
-      res.send(JSON.stringify({error: 'X SEARCH ERROR: Login', login: 1}));    
-      return; 
-    } 
-        
+
     } else {
-      res.send(JSON.stringify({error: 'X SEARCH ERROR: NO Params', login: 0}));    
+      res.send(JSON.stringify({ error: 'X SEARCH ERROR: NO Params', login: 0 }));
       return;
     }
-    
+
   } else if (req.session[users] != null) {
     console.log("loading from cache");
     // saved as JSON STRING
-    res.send( req.session[users]);    
+    res.send(req.session[users]);
   } else {
-    res.send(JSON.stringify({error: 'X SEARCH ERROR: API Error', login: 1}));    
-  } 
+    res.send(JSON.stringify({ error: 'X SEARCH ERROR: API Error', login: 1 }));
+  }
 });
 
 app.use(
   cors(
-     {origin: '*' } 
-    )
+    { origin: '*' }
+  )
 );
 
-app.listen(3000, () => {    
+app.listen(3000, () => {
   console.log(`Go here to login: ${beefDap}`);
 });
