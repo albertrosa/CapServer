@@ -12,6 +12,7 @@ RUN npm install
 # Make port 3000 available to the world outside this container
 EXPOSE 3000
 EXPOSE 8080
+EXPOSE 80
 
 # Run the command to start the node.js process
 CMD ["node", "app.js"]
