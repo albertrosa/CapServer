@@ -20,6 +20,8 @@ const cors = require("cors");
 const session = require('express-session');
 const MySQLStore = require("express-mysql-session")(session);
 
+const VERSION = "v0.2.0";
+
 const mysql_options = {
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
@@ -46,8 +48,6 @@ app.use(session({
 }))
 
 const beefDap = process.env.BEEF_URI;
-const max = 100;
-const min = 1;
 
 const authClient = new auth.OAuth2User({
   client_id: process.env.X_ACCOUNT,
@@ -57,6 +57,38 @@ const authClient = new auth.OAuth2User({
 });
 
 const STATE = "my-state";
+
+const userSearchFields = "user.fields=created_at,name,id,profile_image_url,verified";
+
+const performUserSearch = async (users, useSession = true) => {
+
+  const token = useSession ? req.session.at : process.env.X_BEARER_TOKEN;
+
+  if (users.indexOf(',') > 0) {
+    const searchResponse = await axios.get("https://api.x.com/2/users/by?usernames=" + users
+      + "&" + userSearchFields
+      , {
+        headers: {
+          "User-Agent": "v2UsersByJS",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    return JSON.stringify(searchResponse.data);
+  } else {
+    // Single Username flow        
+    const searchResponse = await axios.get("https://api.x.com/2/users/by/username/" + users
+      + "?" + userSearchFields
+      , {
+        headers: {
+          "User-Agent": "v2UsersByJS",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    return JSON.stringify(searchResponse.data);
+  }
+}
 
 app.get("/twitter/callback", async function (req, res) {
   try {
@@ -259,51 +291,14 @@ app.get('/twitter/users', async function (req, res) {
     if (req.session.at == null && xt != null) {
       req.session.at = xt;
     }
-
     if (users) {
       try {
-
-        if (users.indexOf(',') > 0) {
-          //  v2 Auth Pattern
-          const searchResponse = await axios.get("https://api.x.com/2/users/by?usernames=" + users
-            + "&user.fields=created_at,name,id,profile_image_url,verified"
-            , {
-              headers: {
-                "User-Agent": "v2UsersByJS",
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${req.session.at}`,
-              },
-            });
-
-          req.session[users] = JSON.stringify(searchResponse.data);
-
-          res.send(JSON.stringify(searchResponse.data));
-          return;
-        } else {
-          // Single Username flow
-
-          //  v2 Auth Pattern
-          const searchResponse = await axios.get("https://api.x.com/2/users/by/username/" + users
-            + "?user.fields=created_at,name,id,profile_image_url"
-            , {
-              headers: {
-                "User-Agent": "v2UsersByJS",
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${req.session.at}`,
-              },
-            });
-
-
-          console.log(searchResponse);
-          req.session[users] = JSON.stringify(searchResponse.data);
-
-          res.send(JSON.stringify(searchResponse.data));
-          return;
-
-
-        }
+        const searched = await performUserSearch(users)
+        req.session[users] = searched;
+        res.send(searched);
+        return;
       } catch (err) {
-        console.log(err);
+        console.error(err);
         res.send(JSON.stringify({ error: 'X SEARCH ERROR: Login', login: 1 }));
         return;
       }
@@ -314,10 +309,16 @@ app.get('/twitter/users', async function (req, res) {
     }
 
   } else if (req.session[users] != null) {
-    console.log("loading from cache");
+    console.info("loading from cache");
     // saved as JSON STRING
     res.send(req.session[users]);
   } else {
+    // User Search Application Search
+
+    const searched = await performUserSearch(users, false);
+    req.session[users] = searched;
+    res.send(searched);
+
     res.send(JSON.stringify({ error: 'X SEARCH ERROR: API Error', login: 1 }));
   }
 });
@@ -329,5 +330,5 @@ app.use(
 );
 
 app.listen(3000, () => {
-  console.log(`Go here to login: ${beefDap}`);
+  console.log(`Go here to login: ${beefDap}\n${VERSION}`);
 });
