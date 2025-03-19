@@ -191,23 +191,22 @@ app.get("/login", async function (req, res) {
 });
 
 app.get('/status', async function (req, res) {
-
   if (req.session.userId) {
     const tmp = {
-      t: req.session.at,
+      id: req.session.userId,
     }
     res.send(JSON.stringify(tmp));
   } else {
-    res.send("LOGIN");
+    res.send(JSON.stringify({ error: 'Login', login: 1 }));
   }
 });
 
 app.get('/logout', async function (req, res) {
-  // try {
-  //   await authClient.revokeAccessToken();    
-  // } catch (error) {
-  //   console.log(error);
-  // }
+  try {
+    await authClient.revokeAccessToken();
+  } catch (error) {
+    console.error(error);
+  }
 
   req.session.destroy((err) => {
     if (err) {
@@ -225,7 +224,7 @@ app.get('/twitter/follows', async function (req, res) {
 
     try {
       //  v2 Auth Pattern          
-      const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query=" + search + "&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name&max_results=100", {
+      const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query=" + search + "&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name,verified,&max_results=100", {
         headers: {
           "User-Agent": "v2RecentSearchJS",
           "Content-Type": "application/json",
@@ -267,7 +266,7 @@ app.get('/twitter/users', async function (req, res) {
         if (users.indexOf(',') > 0) {
           //  v2 Auth Pattern
           const searchResponse = await axios.get("https://api.x.com/2/users/by?usernames=" + users
-            + "&user.fields=created_at,name,id,profile_image_url"
+            + "&user.fields=created_at,name,id,profile_image_url,verified"
             , {
               headers: {
                 "User-Agent": "v2UsersByJS",
