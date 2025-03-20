@@ -9,9 +9,7 @@
 //
 // The server is also responsible for setting up CORS to allow
 // the frontend to make requests to the server
-
-const { TwitterApi } = require("twitter-api-v2");
-const { Client, auth } = require("twitter-api-sdk");
+const { auth } = require("twitter-api-sdk");
 const express = require("express");
 const isMobile = require('is-mobile');
 const axios = require("axios");
@@ -20,7 +18,7 @@ const cors = require("cors");
 const session = require('express-session');
 const MySQLStore = require("express-mysql-session")(session);
 
-const VERSION = "v0.2.0";
+const VERSION = "v0.2.1";
 
 const port = process.env.PORT || 3000;
 const mysql_options = {
@@ -284,7 +282,7 @@ app.get('/twitter/users', async function (req, res) {
 
   if ((req.session.at) && req.session[users] == null) {
 
-    if (users) {
+    if (users && users.length > 0) {
       try {
         const searched = await performUserSearch(users)
         req.session[users] = searched;
@@ -302,11 +300,14 @@ app.get('/twitter/users', async function (req, res) {
     // saved as JSON STRING
     res.send(req.session[users]);
   } else {
-    // User Search Application Search
-
-    const searched = await performUserSearch(users, false);
-    req.session[users] = searched;
-    res.send(searched);
+    if (users && users.length > 0) {
+      // User Search Application Search
+      const searched = await performUserSearch(users, false);
+      req.session[users] = searched;
+      res.send(searched);
+    } else {
+      res.send(JSON.stringify({ error: 'X SEARCH ERROR: NO Params', login: 0 }));
+    }
   }
 });
 
