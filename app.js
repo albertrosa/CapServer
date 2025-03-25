@@ -18,7 +18,7 @@ const cors = require("cors");
 const session = require('express-session');
 const MySQLStore = require("express-mysql-session")(session);
 
-const VERSION = "v0.2.1";
+const VERSION = "v0.2.2";
 
 const port = process.env.PORT || 3000;
 const mysql_options = {
