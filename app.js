@@ -57,7 +57,7 @@ const authClient = new auth.OAuth2User({
 
 const STATE = "my-state";
 
-const userSearchFields = "user.fields=created_at,name,id,profile_image_url,verified";
+const userSearchFields = "user.fields=created_at,name,id,profile_image_url,verified,verified_type";
 
 const performUserSearch = async (users, useSession = true) => {
 
@@ -250,7 +250,7 @@ app.get('/twitter/follows', async function (req, res) {
 
     try {
       //  v2 Auth Pattern          
-      const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query=" + search + "&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name,verified,&max_results=100", {
+      const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query=" + search + "&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name,verified&max_results=100", {
         headers: {
           "User-Agent": "v2RecentSearchJS",
           "Content-Type": "application/json",
