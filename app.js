@@ -17,10 +17,13 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const session = require('express-session');
 const MySQLStore = require("express-mysql-session")(session);
+const mysql = require('mysql2/promise');
+const VERSION = "v0.3.0";
 
-const VERSION = "v0.2.2";
-
+dotenv.config();
 const port = process.env.PORT || 3000;
+
+/** SESSIONS */
 const mysql_options = {
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
@@ -31,9 +34,62 @@ const mysql_options = {
 }
 
 const sessionStore = new MySQLStore(mysql_options);
-dotenv.config();
+/** END SESSIONS */
+
+
+/** DB INTERACTIONS */
+
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_DATABASE,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
+
+process.on('SIGINT', async () => {
+  await pool.end();
+  console.log("\n\nDatabase connection pool closed");
+  process.exit(0);
+});
+
+async function save_meta_data(send_key, rule_key, data) {
+  const [rows] = await pool.execute(
+    'INSERT INTO rule_metas (send, rule, data, created) VALUES (?, ?, ?, CURRENT_TIMESTAMP)',
+    [send_key, rule_key, data]
+  );
+  return rows
+}
+
+
+async function remove_meta_data(send_key, rule_key) {
+  const [rows] = await pool.execute(
+    'DELETE FROM rule_metas where send = ? and rule = ?',
+    [send_key, rule_key]
+  );
+  return rows
+}
+
+async function get_meta_data(send_key, rule_key) {
+  const sql = 'SELECT * FROM rule_metas where send = ? and rule = ?';
+  const data = await pool.query(sql, [send_key, rule_key]);
+
+  return result_handler(data);
+}
+
+function result_handler([row, fields]) {
+  if (row && row.length > 1) return row;
+  if (row && row.length == 1) return row[0];
+}
+/** DB INTRERACTIONS */
+
+
 const app = express();
 app.use(cors());
+app.use(express.urlencoded({ extended: true }))
 
 
 //12 hours reset
@@ -310,6 +366,74 @@ app.get('/twitter/users', async function (req, res) {
     }
   }
 });
+
+app.get('/meta', async function (req, res) {
+  const { send, rule } = req.query;
+  try {
+    const result = await get_meta_data(send, rule);
+    if (result) {
+      res.send(JSON.stringify({ data: result }));
+      return;
+    }
+  } catch (err) {
+    console.error(err);
+  }
+
+  res.send(JSON.stringify({ error: 'META ERROR: NO Data', login: 0 }));
+  return;
+});
+
+
+app.post('/meta', async function (req, res) {
+  try {
+    const { send, rule, data } = req.body
+
+    try {
+      const result = await save_meta_data(send, rule, data);
+      if (result) {
+        res.send(JSON.stringify({ status: 'Saved' }));
+      } else {
+        res.send(JSON.stringify({ error: 'Save META ERROR' }));
+      }
+    } catch (err) {
+      res.send(JSON.stringify({ error: 'Save META ERROR' }));
+      console.error(err);
+    }
+  } catch (err) {
+    console.error(err)
+    res.send(JSON.stringify({ error: 'META ERROR' }));
+  }
+  return;
+});
+
+
+app.delete('/meta', async function (req, res) {
+  try {
+    const { send, rule } = req.body
+    try {
+      const result = await remove_meta_data(send, rule);
+      if (result) {
+        res.send(JSON.stringify({ status: 'Removed' }));
+      } else {
+        res.send(JSON.stringify({ error: 'Removal META ERROR' }));
+      }
+    } catch (err) {
+      res.send(JSON.stringify({ error: 'Removal META ERROR' }));
+      console.error(err);
+    }
+  } catch (err) {
+    console.error(err)
+    res.send(JSON.stringify({ error: 'META ERROR' }));
+    return;
+  }
+
+
+
+  return;
+});
+
+
+
 
 app.use(
   cors(

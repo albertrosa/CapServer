@@ -17,3 +17,16 @@ npm install
 ```
 node app.js
 ```
+
+
+### RULE METAS TABLE
+```mysql
+create table  rule_metas(
+  id int NOT NULL AUTO_INCREMENT,
+  send varchar(255) NOT NULL, 
+  rule varchar(255) NOT NULL, 
+  data LONGTEXT, 
+  created TIMESTAMP,
+  PRIMARY KEY (id)
+)
+```
