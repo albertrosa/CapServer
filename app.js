@@ -65,10 +65,10 @@ async function save_meta_data(send_key, rule_key, data) {
 }
 
 
-async function remove_meta_data(send_key, rule_key) {
+async function remove_meta_data(send_key) {
   const [rows] = await pool.execute(
-    'DELETE FROM rule_metas where send = ? and rule = ?',
-    [send_key, rule_key]
+    'DELETE FROM rule_metas where send = ?',
+    [send_key]
   );
   return rows
 }
@@ -415,9 +415,9 @@ app.post('/meta', async function (req, res) {
 
 app.delete('/meta', async function (req, res) {
   try {
-    const { send, rule } = req.body
+    const { send } = req.body
     try {
-      const result = await remove_meta_data(send, rule);
+      const result = await remove_meta_data(send);
       if (result) {
         res.send(JSON.stringify({ status: 'Removed' }));
       } else {
