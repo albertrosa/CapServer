@@ -385,13 +385,14 @@ app.get('/meta', async function (req, res) {
 
 app.post('/meta', async function (req, res) {
   try {
-    const { send, rule, data } = req.body
+    const { send, rule, data, params } = req.body
 
     console.log(send);
     console.log(rule);
     console.log(data);
+    console.log(params);
     try {
-      const result = await save_meta_data(send, rule, data);
+      const result = await save_meta_data(params.send, params.rule, params.data);
       if (result) {
         res.send(JSON.stringify({ status: 'Saved' }));
       } else {
