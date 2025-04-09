@@ -385,12 +385,8 @@ app.get('/meta', async function (req, res) {
 
 app.post('/meta', async function (req, res) {
   try {
-    const { send, rule, data, params } = req.body
+    const { params } = req.body
 
-    console.log(send);
-    console.log(rule);
-    console.log(data);
-    console.log(params);
     try {
       const result = await save_meta_data(params.send, params.rule, params.data);
       if (result) {
@@ -400,7 +396,6 @@ app.post('/meta', async function (req, res) {
       }
     } catch (err) {
       console.error(err);
-      console.log(req.body);
       res.send(JSON.stringify({ error: 'Save META ERROR' }));
     }
   } catch (err) {
