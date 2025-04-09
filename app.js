@@ -308,7 +308,7 @@ app.get('/twitter/follows', async function (req, res) {
 
       const timeRange = (start ? '&' + start : '') + (end ? '&' + end : '');
 
-      const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query=" + search + "&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name,verified&max_results=100" + timeRange, {
+      const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query=" + search + timeRange + "&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name,verified&max_results=100", {
         headers: {
           "User-Agent": "v2RecentSearchJS",
           "Content-Type": "application/json",
