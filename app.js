@@ -38,7 +38,6 @@ const sessionStore = new MySQLStore(mysql_options);
 
 
 /** DB INTERACTIONS */
-
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
@@ -300,13 +299,16 @@ app.get('/logout', async function (req, res) {
 
 app.get('/twitter/follows', async function (req, res) {
 
-  const { xt, search } = req.query;
+  const { xt, search, start, end } = req.query;
 
   if ((req.session.at || xt) && req.session[search] == null) {
 
     try {
-      //  v2 Auth Pattern          
-      const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query=" + search + "&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name,verified&max_results=100", {
+      //  v2 Auth Pattern         
+
+      const timeRange = (start ? '&' + start : '') + (end ? '&' + end : '');
+
+      const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query=" + search + "&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name,verified&max_results=100" + timeRange, {
         headers: {
           "User-Agent": "v2RecentSearchJS",
           "Content-Type": "application/json",
