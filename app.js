@@ -332,7 +332,7 @@ app.get('/twitter/follows', async function (req, res) {
     return;
   } else if (req.session[search] != null) {
     console.info("Using Session");
-    res.send(req.session[search]);
+    res.send(JSON.parse(req.session[search]));
   } else {
     res.send(JSON.stringify({ error: 'X SEARCH ERROR: Error', login: 0 }));
   }
