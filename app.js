@@ -330,9 +330,9 @@ app.get('/twitter/follows', async function (req, res) {
     } catch (err) { console.error('Search Error', err); }
     res.send(JSON.stringify({ error: 'X SEARCH ERROR: API Error', login: 1 }));
     return;
-  } else if (req.session[search] != null) {
+  } else if (req.session[generateMD5Hash(search)] != null) {
     console.info("Using Session");
-    res.send(JSON.parse(req.session[search]));
+    res.send(JSON.parse(req.session[generateMD5Hash(search)]));
   } else {
     res.send(JSON.stringify({ error: 'X SEARCH ERROR: Error', login: 0 }));
   }
