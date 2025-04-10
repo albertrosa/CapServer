@@ -9,7 +9,7 @@
 //
 // The server is also responsible for setting up CORS to allow
 // the frontend to make requests to the server
-const { crypto } = require('crypto');
+const crypto = require('crypto');
 const { auth } = require("twitter-api-sdk");
 const express = require("express");
 const isMobile = require('is-mobile');

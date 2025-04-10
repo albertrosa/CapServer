@@ -12,6 +12,7 @@
   "dependencies": {
     "axios": "^1.7.7",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "express-mysql-session": "^3.0.3",
@@ -26,6 +27,5 @@
     "twitter-api-sdk": "^1.2.1",
     "twitter-api-v2": "^1.18.2",
     "twitter-v1-oauth": "^1.0.15"
-    
   }
 }
