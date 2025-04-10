@@ -9,6 +9,7 @@
 //
 // The server is also responsible for setting up CORS to allow
 // the frontend to make requests to the server
+import crypto from 'node:crypto';
 const { auth } = require("twitter-api-sdk");
 const express = require("express");
 const isMobile = require('is-mobile');
@@ -19,6 +20,7 @@ const session = require('express-session');
 const MySQLStore = require("express-mysql-session")(session);
 const mysql = require('mysql2/promise');
 const VERSION = "v0.3.0";
+
 
 dotenv.config();
 const port = process.env.PORT || 3000;
@@ -85,6 +87,11 @@ function result_handler([row, fields]) {
 }
 /** DB INTRERACTIONS */
 
+/* crypt */
+function generateMD5Hash(input) {
+  return crypto.createHash('md5').update(input).digest('hex');
+}
+/* end crypt */
 
 const app = express();
 app.use(cors());
@@ -301,7 +308,7 @@ app.get('/twitter/follows', async function (req, res) {
 
   const { xt, search, start, end } = req.query;
 
-  if ((req.session.at || xt) && req.session[search] == null) {
+  if ((req.session.at || xt) && req.session[generateMD5Hash(search)] == null) {
 
     try {
       //  v2 Auth Pattern         
@@ -316,7 +323,7 @@ app.get('/twitter/follows', async function (req, res) {
         },
       });
 
-      req.session[search] == JSON.stringify(searchResponse.data);
+      req.session[generateMD5Hash(search)] == JSON.stringify(searchResponse.data);
       res.send(JSON.stringify(JSON.stringify(searchResponse.data)));
       return;
 
