@@ -324,7 +324,7 @@ app.get('/twitter/follows', async function (req, res) {
       });
 
       req.session[generateMD5Hash(search)] == JSON.stringify(searchResponse.data);
-      res.send(JSON.stringify(JSON.stringify(searchResponse.data)));
+      res.send(JSON.stringify(searchResponse.data));
       return;
 
     } catch (err) { console.error('Search Error', err); }
@@ -332,7 +332,7 @@ app.get('/twitter/follows', async function (req, res) {
     return;
   } else if (req.session[generateMD5Hash(search)] != null) {
     console.info("Using Session");
-    res.send(JSON.parse(req.session[generateMD5Hash(search)]));
+    res.send(req.session[generateMD5Hash(search)]);
   } else {
     res.send(JSON.stringify({ error: 'X SEARCH ERROR: Error', login: 0 }));
   }
