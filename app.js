@@ -182,6 +182,8 @@ app.get("/twitter/callback", async function (req, res) {
       verified_type: userResponse.data.data.verified_type,
     }
 
+    req.session['me'] = JSON.stringify(tmp);
+
     console.log(req.headers['user-agent']);
     const dat = encodeURIComponent(JSON.stringify(tmp));
 
@@ -421,7 +423,6 @@ app.post('/meta', async function (req, res) {
   return;
 });
 
-
 app.delete('/meta', async function (req, res) {
   try {
     const { send } = req.body
@@ -446,6 +447,46 @@ app.delete('/meta', async function (req, res) {
 
   return;
 });
+
+
+app.post('/verify', async function (req, res) {
+  try {
+    const { params } = req.body
+    console.log(params);
+
+    if (req.session['me'] == null || req.session['me'] == undefined) {
+      res.send(JSON.stringify({ error: 'User Data Missing ERROR' }));
+      return;
+    }
+
+    let rul;
+
+    switch (params.style) {
+      case "createdBeforeOn":
+        // here we just compare user creation
+        let userDate =
+          new Date(
+            JSON.parse(req.session['me']).created_at
+          ).getTime()
+
+        if (params.data < userDate) {
+          // here we approve the created rule for signature
+          rul = params.data + ':' + userDate;
+        }
+        break;
+    }
+
+
+    res.send(JSON.stringify({ status: 'Done', msg: rul }));
+  } catch (err) {
+    console.error(err)
+    res.send(JSON.stringify({ error: 'Verification ERROR' }));
+  }
+  return;
+
+
+});
+app.post('/validate', async function (req, res) { });
 
 
 
