@@ -21,6 +21,7 @@ const MySQLStore = require("express-mysql-session")(session);
 const mysql = require('mysql2/promise');
 const VERSION = "v0.3.0";
 
+const { Keypair } = require('@solana/web3.js');
 
 dotenv.config();
 const port = process.env.PORT || 3000;
@@ -459,8 +460,15 @@ app.delete('/meta', async function (req, res) {
 app.post('/verify', async function (req, res) {
   try {
     const { params } = req.body
-    console.log(params);
-    console.log(req.session)
+
+
+    hex_key = os.environ['SOL_SECRET']
+    secret = Uint8Array.from(hex_key);
+    const keypair = Keypair.fromSecretKey(secret);
+
+
+    console.log(keypair.publicKey);
+    console.log(keypair.signature);
 
     if (req.session['me'] == null || req.session['me'] == undefined) {
       const tmp = await getXUserData(params.xt, req);
@@ -471,7 +479,7 @@ app.post('/verify', async function (req, res) {
 
     switch (params.style) {
       case "createdBeforeOn":
-        let userDate = new Date(tmp.created_at).getTime()
+        let userDate = new Date(tmp.created_at).getTime() / 1000; //on-chain tracking
 
         if (params.data < userDate) {
           // here we approve the created rule for signature
@@ -479,9 +487,8 @@ app.post('/verify', async function (req, res) {
         }
         break;
     }
+    res.send(JSON.stringify({ status: 'Done', msg: rul, sig: keypair.signature, pubkey: keypair.publicKey }));
 
-
-    res.send(JSON.stringify({ status: 'Done', msg: rul }));
   } catch (err) {
     console.error(err)
     res.send(JSON.stringify({ error: 'Verification ERROR' }));
@@ -490,6 +497,11 @@ app.post('/verify', async function (req, res) {
 
 
 });
+
+
+
+
+
 app.post('/validate', async function (req, res) { });
 
 
