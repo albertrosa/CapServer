@@ -464,7 +464,7 @@ app.post('/verify', async function (req, res) {
 
     hex_key = process.env.SOL_SECRET;
     secret = Uint8Array.from(hex_key);
-    const keypair = Keypair.fromSecretKey(secret);
+    const keypair = Keypair.fromSecretKey(hex_key);
 
 
     console.log(keypair.publicKey);
