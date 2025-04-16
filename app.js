@@ -465,8 +465,6 @@ app.post('/verify', async function (req, res) {
     if (req.session['me'] == null || req.session['me'] == undefined) {
       const tmp = await getXUserData(params.xt, req);
       req.session.me = tmp;
-      res.send(JSON.stringify({ error: 'User Data Missing ERROR', data: tmp }));
-      return;
     }
 
     let rul;
