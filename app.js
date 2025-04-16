@@ -189,7 +189,7 @@ app.get("/twitter/callback", async function (req, res) {
     req.session.at = accessToken;
     console.log('Session created');
 
-    tmp = getXUserData(accessToken, req);
+    tmp = await getXUserData(accessToken, req);
     req.session.me = JSON.stringify(tmp);
 
     const dat = encodeURIComponent(JSON.stringify(tmp));
@@ -463,7 +463,7 @@ app.post('/verify', async function (req, res) {
     console.log(req.session)
 
     if (req.session['me'] == null || req.session['me'] == undefined) {
-      const tmp = getXUserData(params.xt, req);
+      const tmp = await getXUserData(params.xt, req);
       req.session.me = tmp;
       res.send(JSON.stringify({ error: 'User Data Missing ERROR', data: tmp }));
       return;
