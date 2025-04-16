@@ -457,17 +457,18 @@ app.delete('/meta', async function (req, res) {
 });
 
 
+
 app.post('/verify', async function (req, res) {
   try {
     const { params } = req.body
 
 
-    hex_key = process.env.SOL_SECRET;
+    hex_key = process.env.SOL_SECRET.slice(0, 32);
     key_bytes = bytes.fromhex(hex_key)
     console.log(hex_key);
-    secret = Uint8Array.from(key_bytes);
+    secret = Uint8Array.from(hex_key);
     console.log(secret);
-    const keypair = Keypair.fromSecretKey(secret);
+    const keypair = Keypair.fromSeed(secret);
 
 
     console.log(keypair.publicKey);
