@@ -182,7 +182,7 @@ app.get("/twitter/callback", async function (req, res) {
       verified_type: userResponse.data.data.verified_type,
     }
 
-    req.session['me'] = JSON.stringify(tmp);
+    req.session.me = JSON.stringify(tmp);
 
     console.log(req.headers['user-agent']);
     const dat = encodeURIComponent(JSON.stringify(tmp));
@@ -453,6 +453,7 @@ app.post('/verify', async function (req, res) {
   try {
     const { params } = req.body
     console.log(params);
+    console.log(req.session)
 
     if (req.session['me'] == null || req.session['me'] == undefined) {
       res.send(JSON.stringify({ error: 'User Data Missing ERROR' }));
