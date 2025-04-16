@@ -463,8 +463,10 @@ app.post('/verify', async function (req, res) {
 
 
     hex_key = process.env.SOL_SECRET;
+    console.log(hex_key);
     secret = Uint8Array.from(hex_key);
-    const keypair = Keypair.fromSecretKey(hex_key);
+    console.log(secret);
+    const keypair = Keypair.fromSecretKey(secret);
 
 
     console.log(keypair.publicKey);
