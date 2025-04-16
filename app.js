@@ -151,6 +151,32 @@ const performUserSearch = async (users, useSession = true) => {
   }
 }
 
+const getXUserData = async (accessToken, req) => {
+  const userResponse = await axios.get("https://api.twitter.com/2/users/me?user.fields=verified,verified_type,profile_image_url,public_metrics,id,username,name,created_at&expansions=pinned_tweet_id&tweet.fields=author_id,created_at", {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  tmp = {
+    t: req.session.at,
+    n: userResponse.data.data.name,
+    u: userResponse.data.data.username,
+    i: userResponse.data.data.id,
+    x_img: userResponse.data.data.profile_image_url,
+    created_at: userResponse.data.data.created_at,
+    s: null,
+    fol_cnt: userResponse.data.data.public_metrics.followers_count,
+    friend_cnt: userResponse.data.data.public_metrics.following_count,
+    verified: userResponse.data.data.verified,
+    verified_type: userResponse.data.data.verified_type,
+  }
+
+  return tmp;
+}
+
+
 app.get("/twitter/callback", async function (req, res) {
   try {
     let tmp;
@@ -159,32 +185,13 @@ app.get("/twitter/callback", async function (req, res) {
 
     // V2 Stuff
     const accessToken = (await authClient.requestAccessToken(code)).token.access_token;
+
     req.session.at = accessToken;
     console.log('Session created');
-    const userResponse = await axios.get("https://api.twitter.com/2/users/me?user.fields=verified,verified_type,profile_image_url,public_metrics,id,username,name,created_at&expansions=pinned_tweet_id&tweet.fields=author_id,created_at", {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
 
-    tmp = {
-      t: req.session.at,
-      n: userResponse.data.data.name,
-      u: userResponse.data.data.username,
-      i: userResponse.data.data.id,
-      x_img: userResponse.data.data.profile_image_url,
-      created_at: userResponse.data.data.created_at,
-      s: null,
-      fol_cnt: userResponse.data.data.public_metrics.followers_count,
-      friend_cnt: userResponse.data.data.public_metrics.following_count,
-      verified: userResponse.data.data.verified,
-      verified_type: userResponse.data.data.verified_type,
-    }
-
+    tmp = getXUserData(accessToken, req);
     req.session.me = JSON.stringify(tmp);
 
-    console.log(req.headers['user-agent']);
     const dat = encodeURIComponent(JSON.stringify(tmp));
 
 
@@ -456,7 +463,9 @@ app.post('/verify', async function (req, res) {
     console.log(req.session)
 
     if (req.session['me'] == null || req.session['me'] == undefined) {
-      res.send(JSON.stringify({ error: 'User Data Missing ERROR' }));
+      const tmp = getXUserData(params.xt, req);
+      req.session.me = tmp;
+      res.send(JSON.stringify({ error: 'User Data Missing ERROR', data: tmp }));
       return;
     }
 
@@ -464,11 +473,7 @@ app.post('/verify', async function (req, res) {
 
     switch (params.style) {
       case "createdBeforeOn":
-        // here we just compare user creation
-        let userDate =
-          new Date(
-            JSON.parse(req.session['me']).created_at
-          ).getTime()
+        let userDate = new Date(tmp.created_at).getTime()
 
         if (params.data < userDate) {
           // here we approve the created rule for signature
