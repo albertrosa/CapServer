@@ -24,13 +24,11 @@ const RuleVivid = 'vivid';
 const RuleSeatgeek = 'seatgeek';
 const RuleChoice = 'choice';
 
-
 function signMessage(message, keypair) {
     const messageBytes = nacl.util.decodeUTF8(message);
     const signature = nacl.sign.detached(messageBytes, keypair.secretKey);
     return bs58.encode(signature)
 }
-
 
 function verifyMessage(message, signature, pubkey) {
     const messageBytes = nacl.util.decodeUTF8(message);
@@ -42,7 +40,6 @@ function verifyMessage(message, signature, pubkey) {
 
     return result;
 }
-
 
 function makeEdInstruct(singerPubKey, message, signature) {
 
@@ -118,10 +115,9 @@ const verify = (messageVer, rule_type) => {
 }
 
 
-const validate = (rule_type, rule_value, user_value) => {
+const validate = (rule_type, rule_value, user_value, choices) => {
 
     let valid = false;
-    console.log(user_value);
     switch (rule_type) {
         case RuleFollow: // not used
             break;
@@ -159,8 +155,17 @@ const validate = (rule_type, rule_value, user_value) => {
                 user_value.post.toLowerCase().indexOf(rule_value.message.toLowerCase()) > -1
             ) {
                 valid = true;
+
+                choices.forEach(c => {
+                    if (rule_value.indexOf(c) == -1 && user_value.indexOf(c) > -1) {
+                        valid = false;
+                    }
+                });
             }
-            break;
+
+
+
+
             break;
         // defaults
         case RuleExpiration:
