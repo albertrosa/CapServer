@@ -10,7 +10,7 @@
   "author": "Albert Rosa",
   "license": "ISC",
   "dependencies": {
-    "@solana/web3.js": "^1.98.0",
+    "@solana/web3.js": "^1.98.1",
     "axios": "^1.7.7",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -25,6 +25,8 @@
     "oauth-1.0a": "^2.2.6",
     "passport": "^0.7.0",
     "passport-twitter": "^1.0.4",
+    "tweetnacl": "^1.0.3",
+    "tweetnacl-util": "^0.15.1",
     "twitter-api-sdk": "^1.2.1",
     "twitter-api-v2": "^1.18.2",
     "twitter-v1-oauth": "^1.0.15"

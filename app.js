@@ -9,6 +9,8 @@
 //
 // The server is also responsible for setting up CORS to allow
 // the frontend to make requests to the server
+
+
 const crypto = require('crypto');
 const { auth } = require("twitter-api-sdk");
 const express = require("express");
@@ -19,9 +21,11 @@ const cors = require("cors");
 const session = require('express-session');
 const MySQLStore = require("express-mysql-session")(session);
 const mysql = require('mysql2/promise');
-const VERSION = "v0.3.0";
+const VERSION = "v0.3.1";
+const CAPSERVER = require('./cap_lib.js');
 
-const { Keypair } = require('@solana/web3.js');
+
+
 
 dotenv.config();
 const port = process.env.PORT || 3000;
@@ -456,48 +460,30 @@ app.delete('/meta', async function (req, res) {
   return;
 });
 
-
-
 app.post('/verify', async function (req, res) {
   try {
     const { params } = req.body
 
+    console.log(params);
+    // if (req.session['me'] == null || req.session['me'] == undefined) {
+    //   const tmp = await getXUserData(params.xt, req);
+    //   req.session.me = tmp;
+    // }
 
-    hex_key = process.env.SOL_SECRET.slice(0, 32);
-    // key_bytes = bytes.fromhex(hex_key)
-    console.log(hex_key);
-    secret = Uint8Array.from(hex_key);
-    console.log(secret);
-    const keypair = Keypair.fromSeed(secret);
+    let rul = '';
 
+    // the rule has passed second tier validation
+    const [validIns, validMessage] = CAPSERVER.verify(params.u, params.style);
+    console.log(validMessage, validIns);
 
-    console.log(keypair.publicKey);
-    console.log(keypair.signature);
-
-    if (req.session['me'] == null || req.session['me'] == undefined) {
-      const tmp = await getXUserData(params.xt, req);
-      req.session.me = tmp;
-    }
-
-    let rul;
-
-    switch (params.style) {
-      case "createdBeforeOn":
-        let userDate = new Date(tmp.created_at).getTime() / 1000; //on-chain tracking
-
-        if (params.data < userDate) {
-          // here we approve the created rule for signature
-          rul = params.data + ':' + userDate;
-        }
-        break;
-    }
-    res.send(JSON.stringify({ status: 'Done', msg: rul, sig: keypair.signature, pubkey: keypair.publicKey }));
-
+    res.send(JSON.stringify({ status: 'Done', msg: rul, message: validMessage, instruction: validIns }));
+    return;
   } catch (err) {
     console.error(err)
     res.send(JSON.stringify({ error: 'Verification ERROR' }));
+    return;
   }
-  return;
+
 
 
 });
@@ -518,5 +504,5 @@ app.use(
 );
 
 app.listen(port, () => {
-  console.log(`Go here to login: ${beefDap}\n${VERSION}`);
+  console.log(`Go here to login: ${beefDap}\n${VERSION} \n ${port}`);
 });

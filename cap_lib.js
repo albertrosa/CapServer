@@ -1,0 +1,144 @@
+const { Keypair } = require("@solana/web3.js");
+const bs58 = require("bs58");
+const nacl = require("tweetnacl");
+nacl.util = require("tweetnacl-util");
+const { Ed25519Program } = require("@solana/web3.js");
+
+const RulePost = 'post';
+const RuleFollow = 'follow';
+const RuleCreatedBefore = 'createdBeforeOn';
+const RuleFriend = 'friends';
+const RuleFollowers = 'followers';
+const RuleVerified = 'validated';
+const RuleExpiration = 'expiration';
+const RuleReply = 'reply';
+const RuleValidator = 'validator';
+const RulePayment = 'payment';
+const RuleCustom = 'custom';
+const RuleVenmo = 'venmo';
+const RuleTicketmaster = 'ticketmaster';
+const RuleAxs = 'axs';
+const RuleShopify = 'shopify';
+const RuleStubhub = 'stubhub';
+const RuleVivid = 'vivid';
+const RuleSeatgeek = 'seatgeek';
+const RuleChoice = 'choice';
+
+
+function signMessage(message, keypair) {
+    const messageBytes = nacl.util.decodeUTF8(message);
+    const signature = nacl.sign.detached(messageBytes, keypair.secretKey);
+    return bs58.encode(signature)
+}
+
+
+function verifyMessage(message, signature, pubkey) {
+    const messageBytes = nacl.util.decodeUTF8(message);
+    const result = nacl.sign.detached.verify(
+        messageBytes,
+        bs58.decode(signature),
+        pubkey.toBytes(),
+    );
+
+    return result;
+}
+
+
+function makeEdInstruct(singerPubKey, message, signature) {
+
+    const edInst = Ed25519Program.createInstructionWithPublicKey(
+        {
+            publicKey: singerPubKey.toBytes(),
+            message: message,
+            signature: signature,
+        }
+    )
+
+    return edInst;
+}
+
+const verify = (messageVer, rule_type) => {
+
+    hex_key = JSON.parse(process.env.SOL_SECRET).slice(0, 32);
+    secret = Uint8Array.from(hex_key);
+    const keypair = Keypair.fromSeed(secret);
+
+    console.log("Public Key:", keypair.publicKey.toBase58());
+    let msg;
+    switch (rule_type) {
+        case RuleFollow:
+        case RuleFollowers:
+        case RuleFriend:
+            msg = 'fol';
+            break;
+        case RulePost:
+        case RuleReply:
+            msg = 'xpost';
+            break;
+        case RuleVerified:
+            msg = 'xv';
+            break;
+        case RuleValidator:
+            msg = 'val';
+            break;
+        case RuleExpiration:
+            msg = 'exp';
+            break;
+        case RuleCreatedBefore:
+            msg = 'xb4';
+            break;
+        case RulePayment:
+            msg = 'pay';
+            break;
+        case RuleChoice:
+            msg = 'choice';
+            break;
+        case RuleCustom:
+            msg = 'c';
+            break;
+        case RuleSeatgeek:
+        case RuleSeatgeek:
+        case RuleStubhub:
+        case RuleTicketmaster:
+        case RuleVenmo:
+        case RuleVivid:
+        case RuleShopify:
+            msg = 'tix';
+            break;
+
+    }
+
+
+    let OK_MESSAGE = msg ? msg : messageVer.toString();
+
+    const signature = signMessage(OK_MESSAGE.toString(), keypair);
+    const edInst = makeEdInstruct(keypair.publicKey, OK_MESSAGE, bs58.decode(signature));
+
+    return [edInst, OK_MESSAGE];
+}
+
+/** END OF  CAPSERVER */
+
+module.exports = {
+    verify,
+    verifyMessage,
+    RulePost,
+    RuleFollow,
+    RuleCreatedBefore,
+    RuleFriend,
+    RuleFollowers,
+    RuleVerified,
+    RuleExpiration,
+    RuleReply,
+    RuleValidator,
+    RulePayment,
+    RuleCustom,
+    RuleVenmo,
+    RuleTicketmaster,
+    RuleAxs,
+    RuleShopify,
+    RuleStubhub,
+    RuleVivid,
+    RuleSeatgeek,
+    RuleChoice,
+}
