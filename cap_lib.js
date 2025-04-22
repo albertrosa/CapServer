@@ -155,6 +155,12 @@ const validate = (rule_type, rule_value, user_value) => {
             }
             break;
         case RuleChoice:
+            if (
+                user_value.post.toLowerCase().indexOf(rule_value.message.toLowerCase()) > -1
+            ) {
+                valid = true;
+            }
+            break;
             break;
         // defaults
         case RuleExpiration:
