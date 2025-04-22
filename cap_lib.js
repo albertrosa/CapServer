@@ -117,9 +117,56 @@ const verify = (messageVer, rule_type) => {
     return [edInst, OK_MESSAGE];
 }
 
+
+const validate = (rule_type, rule_value, user_value) => {
+
+    let valid = false;
+    console.log(user_value);
+    switch (rule_type) {
+        case RuleFollow: // not used
+            break;
+        case RuleCreatedBefore:
+            valid = Number(rule_value.time) >= Number(user_value.c);
+            break;
+        case RuleFollowers:
+            valid = Number(rule_value.count) <= Number(user_value.fol);
+            break;
+        case RuleFriend:
+            valid = Number(rule_value.count) <= Number(user_value.friend);
+            break;
+        case RuleVerified:
+            valid = user_value.v.toString() === "true";
+            break;
+        case RulePost:
+        case RuleReply:
+            break;
+        case RuleChoice:
+            break;
+        // defaults
+        case RuleExpiration:
+        case RuleCustom:
+        case RuleSeatgeek:
+        case RuleSeatgeek:
+        case RuleStubhub:
+        case RuleTicketmaster:
+        case RuleVenmo:
+        case RuleVivid:
+        case RuleShopify:
+        case RuleValidator: // on-chain verification
+        case RulePayment: // on-chain verification
+        default:
+            valid = true;
+            break;
+
+    }
+
+    return valid;
+}
+
 /** END OF  CAPSERVER */
 
 module.exports = {
+    validate,
     verify,
     verifyMessage,
     RulePost,

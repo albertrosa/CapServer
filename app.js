@@ -463,28 +463,29 @@ app.delete('/meta', async function (req, res) {
 app.post('/verify', async function (req, res) {
   try {
     const { params } = req.body
-
-    console.log(params);
     // if (req.session['me'] == null || req.session['me'] == undefined) {
     //   const tmp = await getXUserData(params.xt, req);
     //   req.session.me = tmp;
     // }
 
     let rul = '';
+    const passed = CAPSERVER.validate(params.style, params.data, params.user)
 
     // the rule has passed second tier validation
-    const [validIns, validMessage] = CAPSERVER.verify(params.u, params.style);
-    console.log(validMessage, validIns);
+    if (passed) {
+      const [validIns, validMessage] = CAPSERVER.verify(params.u, params.style);
+      console.log(validMessage, validIns);
 
-    res.send(JSON.stringify({ status: 'Done', msg: rul, message: validMessage, instruction: validIns }));
+      res.send(JSON.stringify({ status: 'Done', msg: rul, message: validMessage, instruction: validIns }));
+    } else {
+      res.send(JSON.stringify({ status: 'Done', msg: rul, message: 'Invalid', instruction: null }));
+    }
     return;
   } catch (err) {
     console.error(err)
     res.send(JSON.stringify({ error: 'Verification ERROR' }));
     return;
   }
-
-
 
 });
 
