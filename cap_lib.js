@@ -156,6 +156,8 @@ const validate = (rule_type, rule_value, user_value, choices) => {
             ) {
                 valid = true;
 
+                console.log(choices);
+
                 choices.forEach(c => {
                     if (rule_value.indexOf(c) == -1 && user_value.indexOf(c) > -1) {
                         valid = false;

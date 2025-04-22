@@ -469,7 +469,7 @@ app.post('/verify', async function (req, res) {
     // }
 
     let rul = '';
-    const passed = CAPSERVER.validate(params.style, params.data, params.user)
+    const passed = CAPSERVER.validate(params.style, params.data, params.user, params.choices.choices)
 
     // the rule has passed second tier validation
     if (passed) {
