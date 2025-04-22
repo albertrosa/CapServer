@@ -139,6 +139,14 @@ const validate = (rule_type, rule_value, user_value) => {
             break;
         case RulePost:
         case RuleReply:
+            const replyTo = rule_value.message.toLowerCase().split(' ')[0];
+            const content = rule_value.message.toLowerCase().replace(replyTo, '');
+            if (
+                user_value.post.toLowerCase().indexOf(replyTo) > -1 &&
+                user_value.post.toLowerCase().indexOf(content) > -1
+            ) {
+                valid = true;
+            }
             break;
         case RuleChoice:
             break;
