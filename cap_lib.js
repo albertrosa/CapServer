@@ -134,7 +134,7 @@ const validate = (rule_type, rule_value, user_value, choices) => {
             valid = user_value.v.toString() === "true";
             break;
         case RulePost:
-            if (
+            if (user_value.post &&
                 user_value.post.toLowerCase().indexOf(rule_value.message.toLowerCase()) > -1
             ) {
                 valid = true;
@@ -143,7 +143,7 @@ const validate = (rule_type, rule_value, user_value, choices) => {
         case RuleReply:
             const replyTo = rule_value.message.toLowerCase().split(' ')[0];
             const content = rule_value.message.toLowerCase().replace(replyTo, '');
-            if (
+            if (user_value.post &&
                 user_value.post.toLowerCase().indexOf(replyTo) > -1 &&
                 user_value.post.toLowerCase().indexOf(content) > -1
             ) {
@@ -151,7 +151,7 @@ const validate = (rule_type, rule_value, user_value, choices) => {
             }
             break;
         case RuleChoice:
-            if (
+            if (user_value.post &&
                 user_value.post.toLowerCase().indexOf(rule_value.message.toLowerCase()) > -1
             ) {
                 valid = true;
