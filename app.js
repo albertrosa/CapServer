@@ -9,6 +9,8 @@
 //
 // The server is also responsible for setting up CORS to allow
 // the frontend to make requests to the server
+
+
 const crypto = require('crypto');
 const { auth } = require("twitter-api-sdk");
 const express = require("express");
@@ -19,7 +21,10 @@ const cors = require("cors");
 const session = require('express-session');
 const MySQLStore = require("express-mysql-session")(session);
 const mysql = require('mysql2/promise');
-const VERSION = "v0.3.0";
+const VERSION = "v0.3.1";
+const CAPSERVER = require('./cap_lib.js');
+
+
 
 
 dotenv.config();
@@ -151,6 +156,32 @@ const performUserSearch = async (users, useSession = true) => {
   }
 }
 
+const getXUserData = async (accessToken, req) => {
+  const userResponse = await axios.get("https://api.twitter.com/2/users/me?user.fields=verified,verified_type,profile_image_url,public_metrics,id,username,name,created_at&expansions=pinned_tweet_id&tweet.fields=author_id,created_at", {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  tmp = {
+    t: req.session.at,
+    n: userResponse.data.data.name,
+    u: userResponse.data.data.username,
+    i: userResponse.data.data.id,
+    x_img: userResponse.data.data.profile_image_url,
+    created_at: userResponse.data.data.created_at,
+    s: null,
+    fol_cnt: userResponse.data.data.public_metrics.followers_count,
+    friend_cnt: userResponse.data.data.public_metrics.following_count,
+    verified: userResponse.data.data.verified,
+    verified_type: userResponse.data.data.verified_type,
+  }
+
+  return tmp;
+}
+
+
 app.get("/twitter/callback", async function (req, res) {
   try {
     let tmp;
@@ -159,30 +190,13 @@ app.get("/twitter/callback", async function (req, res) {
 
     // V2 Stuff
     const accessToken = (await authClient.requestAccessToken(code)).token.access_token;
+
     req.session.at = accessToken;
     console.log('Session created');
-    const userResponse = await axios.get("https://api.twitter.com/2/users/me?user.fields=verified,verified_type,profile_image_url,public_metrics,id,username,name,created_at&expansions=pinned_tweet_id&tweet.fields=author_id,created_at", {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
 
-    tmp = {
-      t: req.session.at,
-      n: userResponse.data.data.name,
-      u: userResponse.data.data.username,
-      i: userResponse.data.data.id,
-      x_img: userResponse.data.data.profile_image_url,
-      created_at: userResponse.data.data.created_at,
-      s: null,
-      fol_cnt: userResponse.data.data.public_metrics.followers_count,
-      friend_cnt: userResponse.data.data.public_metrics.following_count,
-      verified: userResponse.data.data.verified,
-      verified_type: userResponse.data.data.verified_type,
-    }
+    tmp = await getXUserData(accessToken, req);
+    req.session.me = JSON.stringify(tmp);
 
-    console.log(req.headers['user-agent']);
     const dat = encodeURIComponent(JSON.stringify(tmp));
 
 
@@ -421,7 +435,6 @@ app.post('/meta', async function (req, res) {
   return;
 });
 
-
 app.delete('/meta', async function (req, res) {
   try {
     const { send } = req.body
@@ -447,6 +460,41 @@ app.delete('/meta', async function (req, res) {
   return;
 });
 
+app.post('/verify', async function (req, res) {
+  try {
+    const { params } = req.body
+    // if (req.session['me'] == null || req.session['me'] == undefined) {
+    //   const tmp = await getXUserData(params.xt, req);
+    //   req.session.me = tmp;
+    // }
+
+    let rul = '';
+    const passed = CAPSERVER.validate(params.style, params.data, params.user, params.choices)
+
+    // the rule has passed second tier validation
+    if (passed) {
+      const [validIns, validMessage] = CAPSERVER.verify(params.u, params.style);
+      console.log(validMessage, validIns);
+
+      res.send(JSON.stringify({ status: 'Done', msg: rul, message: validMessage, instruction: validIns }));
+    } else {
+      res.send(JSON.stringify({ status: 'Done', msg: rul, message: 'Invalid', instruction: null }));
+    }
+    return;
+  } catch (err) {
+    console.error(err)
+    res.send(JSON.stringify({ error: 'Verification ERROR' }));
+    return;
+  }
+
+});
+
+
+
+
+
+app.post('/validate', async function (req, res) { });
+
 
 
 
@@ -457,5 +505,5 @@ app.use(
 );
 
 app.listen(port, () => {
-  console.log(`Go here to login: ${beefDap}\n${VERSION}`);
+  console.log(`Go here to login: ${beefDap}\n${VERSION} \n ${port}`);
 });
