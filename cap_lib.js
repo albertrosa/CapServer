@@ -142,13 +142,22 @@ const validate = (rule_type, rule_value, user_value, choices) => {
             break;
         case RuleReply:
             const replyTo = rule_value.message.toLowerCase().split(' ')[0];
-            const content = rule_value.message.toLowerCase().replace(replyTo, '');
+            const content = rule_value.message.toLowerCase().replace(replyTo, '').trim();
             if (user_value.post &&
                 user_value.post.toLowerCase().indexOf(replyTo) > -1 &&
                 user_value.post.toLowerCase().indexOf(content) > -1
             ) {
                 valid = true;
             }
+
+            if (user_value.post &&
+                !isNaN(Number(replyTo)) &&
+                user_value.post.toLowerCase().indexOf(content) > -1
+            ) {
+                valid = true;
+            }
+
+
             break;
         case RuleChoice:
             if (user_value.post &&
