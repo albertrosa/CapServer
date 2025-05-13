@@ -390,6 +390,40 @@ app.get('/twitter/users', async function (req, res) {
   }
 });
 
+app.get('/twitter/post', async function (req, res) {
+
+  const { xt, id } = req.query;
+
+  if ((req.session.at || xt) && req.session[generateMD5Hash(id)] == null) {
+
+    try {
+      //  v2 Auth Pattern         
+
+      const searchResponse = await axios.get("https://api.x.com/2/tweets/" + id + "?query=" + search + timeRange + "&tweet.fields=created_at,text&expansions=author_id&user.fields=created_at,name,verified", {
+        headers: {
+          "User-Agent": "v2RecentSearchJS",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${xt}`,
+        },
+      });
+
+      req.session[generateMD5Hash(id)] == JSON.stringify(searchResponse.data);
+      res.send(JSON.stringify(searchResponse.data));
+      return;
+
+    } catch (err) { console.error('Search Error', err); }
+    res.send(JSON.stringify({ error: 'X SEARCH ERROR: API Error', login: 1 }));
+    return;
+  } else if (req.session[generateMD5Hash(id)] != null) {
+    console.info("Using Session");
+    res.send(req.session[generateMD5Hash(id)]);
+  } else {
+    res.send(JSON.stringify({ error: 'X SEARCH ERROR: Error', login: 0 }));
+  }
+}
+
+)
+
 app.get('/meta', async function (req, res) {
   const { send, rule } = req.query;
 
