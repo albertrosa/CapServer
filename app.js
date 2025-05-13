@@ -399,7 +399,7 @@ app.get('/twitter/post', async function (req, res) {
     try {
       //  v2 Auth Pattern         
 
-      const searchResponse = await axios.get("https://api.x.com/2/tweets/" + id + "?query=" + search + timeRange + "&tweet.fields=created_at,text&expansions=author_id&user.fields=created_at,name,verified", {
+      const searchResponse = await axios.get("https://api.x.com/2/tweets/" + id + "?tweet.fields=created_at,text&expansions=author_id&user.fields=created_at,name,verified", {
         headers: {
           "User-Agent": "v2RecentSearchJS",
           "Content-Type": "application/json",
