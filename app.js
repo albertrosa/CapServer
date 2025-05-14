@@ -118,10 +118,11 @@ app.use(session({
   key: 'cap_oracle_session',
   secret: process.env.session,
   store: sessionStore,
-  resave: true,
+  resave: false,
   saveUninitialized: true,
-  cookie: { secured: process.env.session_secured, maxAge: 1000 * 60 * 60 * 2 }, // 2 Hour session limit to match X API lifetime
+  cookie: { secured: process.env.session_secured, maxAge: 1000 * 60 * 60 * 2, sameSite: false }, // 2 Hour session limit to match X API lifetime
   clearExpired: true,
+
 }))
 
 const beefDap = process.env.BEEF_URI;
