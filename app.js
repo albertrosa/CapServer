@@ -396,6 +396,9 @@ app.get('/twitter/post', async function (req, res) {
 
   const { xt, id } = req.query;
 
+  console.info('code: ',generateMD5Hash(id) );
+  console.info("L: ", req.session[generateMD5Hash(id)]);
+
   if ((req.session.at || xt) && id && req.session[generateMD5Hash(id)] == null) {
 
     try {
