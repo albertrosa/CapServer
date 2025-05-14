@@ -103,7 +103,13 @@ function generateMD5Hash(input) {
 /* end crypt */
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: '*', // Allow requests from a specific origin
+  methods: ['GET', 'POST'], // Allow only GET and POST requests
+  headers: ['Content-Type', 'Authorization'], // Allow only Content-Type and Authorization headers
+  maxAge: 3600 * 2, // Set the maximum age of the CORS configuration to 2 hour
+  credentials: true // Send credentials with the request
+}));
 app.use(express.urlencoded({ extended: true }))
 
 
@@ -402,7 +408,7 @@ app.get('/twitter/post', async function (req, res) {
   console.info('code: ', generateMD5Hash(id));
   console.info("L: ", req.session[generateMD5Hash(id)]);
   console.info("t: ", req.session.t);
-  console.info("t: ", req.session.at);
+  console.info("session t: ", req.session.at);
 
   req.session.t = xt;
   req.session[generateMD5Hash(id)] = { "data": { "text": "CASTasdfasdf", "id": "1910392237394972890", "author_id": "1393563533820977159", "edit_history_tweet_ids": ["1910392237394972890"], "created_at": "2025-04-10T17:59:37.000Z" }, "includes": { "users": [{ "created_at": "2021-05-15T13:47:17.000Z", "verified": false, "username": "webofblood1", "id": "1393563533820977159", "name": "WOBInteractive" }] } };
