@@ -94,7 +94,8 @@ function result_handler([row, fields]) {
 
 /* crypt */
 function generateMD5Hash(input) {
-  return crypto.createHash('md5').update(input).digest('hex');
+  console.info(input);
+  return crypto.createHash('md5').update(input.toString()).digest('hex');
 }
 /* end crypt */
 
