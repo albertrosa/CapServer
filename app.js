@@ -337,7 +337,7 @@ app.get('/twitter/follows', async function (req, res) {
         },
       });
 
-      req.session[generateMD5Hash(search)] == JSON.stringify(searchResponse.data);
+      req.session[generateMD5Hash(search)] = JSON.stringify(searchResponse.data);
       res.send(JSON.stringify(searchResponse.data));
       return;
 
@@ -359,12 +359,12 @@ app.get('/twitter/follows', async function (req, res) {
 app.get('/twitter/users', async function (req, res) {
   const { users } = req.query;
 
-  if ((req.session.at) && req.session[users] == null) {
+  if ((req.session.at) && req.session[generateMD5Hash(users)] == null) {
 
     if (users && users.length > 0) {
       try {
         const searched = await performUserSearch(users)
-        req.session[users] = searched;
+        req.session[generateMD5Hash(users)] = searched;
         res.send(searched);
       } catch (err) {
         res.send(JSON.stringify({ error: 'X SEARCH ERROR: Login', login: 1 }));
@@ -374,15 +374,15 @@ app.get('/twitter/users', async function (req, res) {
       res.send(JSON.stringify({ error: 'X SEARCH ERROR: NO Params', login: 0 }));
     }
 
-  } else if (req.session[users] != null) {
+  } else if (req.session[generateMD5Hash(users)] != null) {
     console.info("loading from cache");
     // saved as JSON STRING
-    res.send(req.session[users]);
+    res.send(req.session[generateMD5Hash(users)]);
   } else {
     if (users && users.length > 0) {
       // User Search Application Search
       const searched = await performUserSearch(users, false);
-      req.session[users] = searched;
+      req.session[generateMD5Hash(users)] = searched;
       res.send(searched);
     } else {
       res.send(JSON.stringify({ error: 'X SEARCH ERROR: NO Params', login: 0 }));
@@ -407,7 +407,7 @@ app.get('/twitter/post', async function (req, res) {
         },
       });
 
-      req.session[generateMD5Hash(id)] == JSON.stringify(searchResponse.data);
+      req.session[generateMD5Hash(id)] = JSON.stringify(searchResponse.data);
       res.send(JSON.stringify(searchResponse.data));
       return;
 
