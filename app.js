@@ -398,6 +398,7 @@ app.get('/twitter/post', async function (req, res) {
 
   console.info('code: ',generateMD5Hash(id) );
   console.info("L: ", req.session[generateMD5Hash(id)]);
+  console.info("t: ", req.session.t)
 
   if ((req.session.at || xt) && id && req.session[generateMD5Hash(id)] == null) {
 
@@ -416,6 +417,7 @@ app.get('/twitter/post', async function (req, res) {
       console.info("Saved: ", JSON.stringify(searchResponse.data));
       console.info("L: ", req.session[generateMD5Hash(id)]);
       console.info("id: ", id)
+      req.session.t = xt;
       res.send(JSON.stringify(searchResponse.data));
       return;
 
