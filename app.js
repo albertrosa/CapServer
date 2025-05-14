@@ -111,7 +111,7 @@ app.use(session({
   secret: process.env.session,
   store: sessionStore,
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   cookie: { secured: process.env.session_secured, maxAge: 1000 * 60 * 60 * 2 } // 2 Hour session limit to match X API lifetime
 }))
 
