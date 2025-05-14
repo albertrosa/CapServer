@@ -18,6 +18,7 @@ const isMobile = require('is-mobile');
 const axios = require("axios");
 const dotenv = require("dotenv");
 const cors = require("cors");
+
 const session = require('express-session');
 const MySQLStore = require("express-mysql-session")(session);
 const mysql = require('mysql2/promise');
@@ -94,7 +95,7 @@ function result_handler([row, fields]) {
 
 /* crypt */
 function generateMD5Hash(input) {
-  if (input){
+  if (input) {
     return crypto.createHash('md5').update(input.toString()).digest('hex');
   }
 }
@@ -109,8 +110,8 @@ app.use(express.urlencoded({ extended: true }))
 app.use(session({
   key: 'cap_oracle_session',
   secret: process.env.session,
-  store: () => sessionStore,
-  resave: false,
+  store: sessionStore,
+  resave: true,
   saveUninitialized: true,
   cookie: { secured: process.env.session_secured, maxAge: 1000 * 60 * 60 * 2 } // 2 Hour session limit to match X API lifetime
 }))
@@ -396,7 +397,7 @@ app.get('/twitter/post', async function (req, res) {
 
   const { xt, id } = req.query;
 
-  console.info('code: ',generateMD5Hash(id) );
+  console.info('code: ', generateMD5Hash(id));
   console.info("L: ", req.session[generateMD5Hash(id)]);
   console.info("t: ", req.session.t)
 
