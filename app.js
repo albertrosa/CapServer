@@ -120,7 +120,7 @@ app.use(session({
   store: sessionStore,
   resave: false,
   saveUninitialized: true,
-  cookie: { secured: process.env.session_secured, maxAge: 1000 * 60 * 60 * 2, sameSite: false }, // 2 Hour session limit to match X API lifetime
+  cookie: { secured: process.env.session_secured, maxAge: 1000 * 60 * 60 * 2, sameSite: 'none' }, // 2 Hour session limit to match X API lifetime
   clearExpired: true,
 
 }))
