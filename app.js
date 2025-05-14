@@ -94,8 +94,9 @@ function result_handler([row, fields]) {
 
 /* crypt */
 function generateMD5Hash(input) {
-  console.info(input);
-  return crypto.createHash('md5').update(input.toString()).digest('hex');
+  if (input){
+    return crypto.createHash('md5').update(input.toString()).digest('hex');
+  }
 }
 /* end crypt */
 
@@ -395,7 +396,7 @@ app.get('/twitter/post', async function (req, res) {
 
   const { xt, id } = req.query;
 
-  if ((req.session.at || xt) && req.session[generateMD5Hash(id)] == null) {
+  if ((req.session.at || xt) && id && req.session[generateMD5Hash(id)] == null) {
 
     try {
       //  v2 Auth Pattern         
@@ -415,7 +416,7 @@ app.get('/twitter/post', async function (req, res) {
     } catch (err) { console.error('Search Error', err); }
     res.send(JSON.stringify({ error: 'X SEARCH ERROR: API Error', login: 1 }));
     return;
-  } else if (req.session[generateMD5Hash(id)] != null) {
+  } else if (id && req.session[generateMD5Hash(id)] != null) {
     console.info("Using Session");
     res.send(req.session[generateMD5Hash(id)]);
   } else {
