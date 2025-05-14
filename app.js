@@ -401,7 +401,8 @@ app.get('/twitter/post', async function (req, res) {
 
   console.info('code: ', generateMD5Hash(id));
   console.info("L: ", req.session[generateMD5Hash(id)]);
-  console.info("t: ", req.session.t)
+  console.info("t: ", req.session.t);
+  console.info("t: ", req.session.at);
 
   req.session.t = xt;
   req.session[generateMD5Hash(id)] = { "data": { "text": "CASTasdfasdf", "id": "1910392237394972890", "author_id": "1393563533820977159", "edit_history_tweet_ids": ["1910392237394972890"], "created_at": "2025-04-10T17:59:37.000Z" }, "includes": { "users": [{ "created_at": "2021-05-15T13:47:17.000Z", "verified": false, "username": "webofblood1", "id": "1393563533820977159", "name": "WOBInteractive" }] } };
@@ -423,7 +424,7 @@ app.get('/twitter/post', async function (req, res) {
       // console.info("L: ", req.session[generateMD5Hash(id)]);
       // console.info("id: ", id)
       req.session.t = xt;
-      req.session.save();
+
       // res.send(JSON.stringify(searchResponse.data));
       res.send(JSON.stringify({ error: 'X SEARCH ERROR: Error', login: 0 }));
       return;
