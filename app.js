@@ -410,6 +410,9 @@ app.get('/twitter/post', async function (req, res) {
       });
 
       req.session[generateMD5Hash(id)] = JSON.stringify(searchResponse.data);
+      console.info("Saved: ", JSON.stringify(searchResponse.data));
+      console.info("L: ", req.session[generateMD5Hash(id)]);
+      console.info("id: ", id)
       res.send(JSON.stringify(searchResponse.data));
       return;
 
