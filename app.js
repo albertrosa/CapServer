@@ -54,7 +54,8 @@ const pool = mysql.createPool({
   database: process.env.DB_DATABASE,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+
 });
 
 process.on('SIGINT', async () => {
@@ -113,7 +114,8 @@ app.use(session({
   store: sessionStore,
   resave: true,
   saveUninitialized: true,
-  cookie: { secured: process.env.session_secured, maxAge: 1000 * 60 * 60 * 2 } // 2 Hour session limit to match X API lifetime
+  cookie: { secured: process.env.session_secured, maxAge: 1000 * 60 * 60 * 2 }, // 2 Hour session limit to match X API lifetime
+  clearExpired: true,
 }))
 
 const beefDap = process.env.BEEF_URI;
@@ -401,26 +403,29 @@ app.get('/twitter/post', async function (req, res) {
   console.info("L: ", req.session[generateMD5Hash(id)]);
   console.info("t: ", req.session.t)
 
+  req.session.t = xt;
+  req.session[generateMD5Hash(id)] = { "data": { "text": "CASTasdfasdf", "id": "1910392237394972890", "author_id": "1393563533820977159", "edit_history_tweet_ids": ["1910392237394972890"], "created_at": "2025-04-10T17:59:37.000Z" }, "includes": { "users": [{ "created_at": "2021-05-15T13:47:17.000Z", "verified": false, "username": "webofblood1", "id": "1393563533820977159", "name": "WOBInteractive" }] } };
   if ((req.session.at || xt) && id && req.session[generateMD5Hash(id)] == null) {
 
     try {
       //  v2 Auth Pattern         
 
-      const searchResponse = await axios.get("https://api.x.com/2/tweets/" + id + "?tweet.fields=created_at,text&expansions=author_id&user.fields=created_at,name,verified", {
-        headers: {
-          "User-Agent": "v2RecentSearchJS",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${xt}`,
-        },
-      });
+      // const searchResponse = await axios.get("https://api.x.com/2/tweets/" + id + "?tweet.fields=created_at,text&expansions=author_id&user.fields=created_at,name,verified", {
+      //   headers: {
+      //     "User-Agent": "v2RecentSearchJS",
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${xt}`,
+      //   },
+      // });
 
-      req.session[generateMD5Hash(id)] = JSON.stringify(searchResponse.data);
-      console.info("Saved: ", JSON.stringify(searchResponse.data));
-      console.info("L: ", req.session[generateMD5Hash(id)]);
-      console.info("id: ", id)
+      // req.session[generateMD5Hash(id)] = JSON.stringify(searchResponse.data);
+      // console.info("Saved: ", JSON.stringify(searchResponse.data));
+      // console.info("L: ", req.session[generateMD5Hash(id)]);
+      // console.info("id: ", id)
       req.session.t = xt;
       req.session.save();
-      res.send(JSON.stringify(searchResponse.data));
+      // res.send(JSON.stringify(searchResponse.data));
+      res.send(JSON.stringify({ error: 'X SEARCH ERROR: Error', login: 0 }));
       return;
 
     } catch (err) { console.error('Search Error', err); }
