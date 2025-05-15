@@ -432,7 +432,7 @@ app.get('/twitter/post', async function (req, res) {
       req.session.t = xt;
 
       res.send(JSON.stringify(searchResponse.data));
-      res.send(JSON.stringify({ error: 'X SEARCH ERROR: Error', login: 0 }));
+      // res.send(JSON.stringify({ error: 'X SEARCH ERROR: Error', login: 0 }));
       return;
 
     } catch (err) { console.error('Search Error', err); }
