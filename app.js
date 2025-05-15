@@ -411,7 +411,8 @@ app.get('/twitter/post', async function (req, res) {
   console.info("session t: ", req.session.at);
 
 
-  // req.session[generateMD5Hash(id)] = { "data": { "text": "CASTasdfasdf", "id": "1910392237394972890", "author_id": "1393563533820977159", "edit_history_tweet_ids": ["1910392237394972890"], "created_at": "2025-04-10T17:59:37.000Z" }, "includes": { "users": [{ "created_at": "2021-05-15T13:47:17.000Z", "verified": false, "username": "webofblood1", "id": "1393563533820977159", "name": "WOBInteractive" }] } };
+  req.session[generateMD5Hash(id)] = { "data": { "id": "1910392237394972890", "edit_history_tweet_ids": ["1910392237394972890"], "author_id": "1393563533820977159", "text": "CASTLES ARE BETTER", "created_at": "2025-04-10T17:59:37.000Z" }, "includes": { "users": [{ "profile_image_url": "https://pbs.twimg.com/profile_images/1415399629622059012/7J2sLEPz_normal.jpg", "verified": false, "verified_type": "none", "name": "WOBInteractive", "created_at": "2021-05-15T13:47:17.000Z", "id": "1393563533820977159", "username": "webofblood1" }] } };
+
   if ((req.session.at || xt) && id && req.session[generateMD5Hash(id)] == null) {
 
     try {
