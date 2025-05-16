@@ -18,6 +18,7 @@ const isMobile = require('is-mobile');
 const axios = require("axios");
 const dotenv = require("dotenv");
 const cors = require("cors");
+
 const session = require('express-session');
 const MySQLStore = require("express-mysql-session")(session);
 const mysql = require('mysql2/promise');
@@ -53,7 +54,8 @@ const pool = mysql.createPool({
   database: process.env.DB_DATABASE,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+
 });
 
 process.on('SIGINT', async () => {
@@ -94,12 +96,20 @@ function result_handler([row, fields]) {
 
 /* crypt */
 function generateMD5Hash(input) {
-  return crypto.createHash('md5').update(input).digest('hex');
+  if (input) {
+    return crypto.createHash('md5').update(input.toString()).digest('hex');
+  }
 }
 /* end crypt */
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://captainfunfe.onrender.com', 'https://captain.fun', 'https://capserver-3eyf.onrender.com', 'https://node.captain.fun'], // Allow requests from a specific origin
+  methods: ['GET', 'POST'], // Allow only GET and POST requests
+  headers: ['Content-Type', 'Authorization'], // Allow only Content-Type and Authorization headers
+  maxAge: 3600 * 2, // Set the maximum age of the CORS configuration to 2 hour
+  credentials: true // Send credentials with the request
+}));
 app.use(express.urlencoded({ extended: true }))
 
 
@@ -109,8 +119,9 @@ app.use(session({
   secret: process.env.session,
   store: sessionStore,
   resave: false,
-  saveUninitialized: false,
-  cookie: { secured: process.env.session_secured, maxAge: 1000 * 60 * 60 * 2 } // 2 Hour session limit to match X API lifetime
+  saveUninitialized: true,
+  cookie: { secured: process.env.session_secured, maxAge: 1000 * 60 * 60 * 2, sameSite: 'none', httpOnly: false, secure: true }, // 2 Hour session limit to match X API lifetime
+  clearExpired: true,
 }))
 
 const beefDap = process.env.BEEF_URI;
@@ -329,7 +340,7 @@ app.get('/twitter/follows', async function (req, res) {
 
       const timeRange = (start ? '&' + start : '') + (end ? '&' + end : '');
 
-      const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query=" + search + timeRange + "&tweet.fields=created_at&expansions=author_id&user.fields=created_at,name,verified&max_results=100", {
+      const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query=" + search + timeRange + "&tweet.fields=created_at&expansions=author_id&max_results=100&" + userSearchFields, {
         headers: {
           "User-Agent": "v2RecentSearchJS",
           "Content-Type": "application/json",
@@ -337,7 +348,7 @@ app.get('/twitter/follows', async function (req, res) {
         },
       });
 
-      req.session[generateMD5Hash(search)] == JSON.stringify(searchResponse.data);
+      req.session[generateMD5Hash(search)] = JSON.stringify(searchResponse.data);
       res.send(JSON.stringify(searchResponse.data));
       return;
 
@@ -359,12 +370,12 @@ app.get('/twitter/follows', async function (req, res) {
 app.get('/twitter/users', async function (req, res) {
   const { users } = req.query;
 
-  if ((req.session.at) && req.session[users] == null) {
+  if ((req.session.at) && req.session[generateMD5Hash(users)] == null) {
 
     if (users && users.length > 0) {
       try {
         const searched = await performUserSearch(users)
-        req.session[users] = searched;
+        req.session[generateMD5Hash(users)] = searched;
         res.send(searched);
       } catch (err) {
         res.send(JSON.stringify({ error: 'X SEARCH ERROR: Login', login: 1 }));
@@ -374,21 +385,66 @@ app.get('/twitter/users', async function (req, res) {
       res.send(JSON.stringify({ error: 'X SEARCH ERROR: NO Params', login: 0 }));
     }
 
-  } else if (req.session[users] != null) {
+  } else if (req.session[generateMD5Hash(users)] != null) {
     console.info("loading from cache");
     // saved as JSON STRING
-    res.send(req.session[users]);
+    res.send(req.session[generateMD5Hash(users)]);
   } else {
     if (users && users.length > 0) {
       // User Search Application Search
       const searched = await performUserSearch(users, false);
-      req.session[users] = searched;
+      req.session[generateMD5Hash(users)] = searched;
       res.send(searched);
     } else {
       res.send(JSON.stringify({ error: 'X SEARCH ERROR: NO Params', login: 0 }));
     }
   }
 });
+
+app.get('/twitter/post', async function (req, res) {
+
+  const { xt, id } = req.query;
+
+  console.info('code: ', generateMD5Hash(id));
+  console.info("L: ", req.session[generateMD5Hash(id)]);
+  console.info("t: ", req.session.t);
+  console.info("session t: ", req.session.at);
+
+
+  // req.session[generateMD5Hash(id)] = { "data": { "id": "1910392237394972890", "edit_history_tweet_ids": ["1910392237394972890"], "author_id": "1393563533820977159", "text": "CASTLES ARE BETTER", "created_at": "2025-04-10T17:59:37.000Z" }, "includes": { "users": [{ "profile_image_url": "https://pbs.twimg.com/profile_images/1415399629622059012/7J2sLEPz_normal.jpg", "verified": false, "verified_type": "none", "name": "WOBInteractive", "created_at": "2021-05-15T13:47:17.000Z", "id": "1393563533820977159", "username": "webofblood1" }] } };
+
+  if ((req.session.at || xt) && id && req.session[generateMD5Hash(id)] == null) {
+
+    try {
+      //  v2 Auth Pattern         
+
+      const searchResponse = await axios.get("https://api.x.com/2/tweets/" + id + "?tweet.fields=created_at,text&expansions=author_id&" + userSearchFields, {
+        headers: {
+          "User-Agent": "v2RecentSearchJS",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${xt}`,
+        },
+      });
+
+      req.session[generateMD5Hash(id)] = JSON.stringify(searchResponse.data);
+      req.session.t = xt;
+
+      res.send(JSON.stringify(searchResponse.data));
+      // res.send(JSON.stringify({ error: 'X SEARCH ERROR: Error', login: 0 }));
+      return;
+
+    } catch (err) { console.error('Search Error', err); }
+    res.send(JSON.stringify({ error: 'X SEARCH ERROR: API Error', login: 1 }));
+    return;
+  } else if (id && req.session[generateMD5Hash(id)] != null) {
+    console.info("Using Session");
+    res.send(req.session[generateMD5Hash(id)]);
+  } else {
+    res.send(JSON.stringify({ error: 'X SEARCH ERROR: Error', login: 0 }));
+  }
+}
+
+)
 
 app.get('/meta', async function (req, res) {
   const { send, rule } = req.query;
