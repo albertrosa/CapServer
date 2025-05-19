@@ -113,14 +113,14 @@ app.use(cors({
 app.use(express.urlencoded({ extended: true }))
 
 
-//12 hours reset
+//2 hours reset
 app.use(session({
   key: 'cap_oracle_session',
   secret: process.env.session,
   store: sessionStore,
   resave: false,
   saveUninitialized: true,
-  cookie: { secured: process.env.session_secured, maxAge: 1000 * 60 * 60 * 2, sameSite: 'none', httpOnly: false, secure: true }, // 2 Hour session limit to match X API lifetime
+  cookie: { secured: process.env.session_secured, maxAge: 1000 * 60 * 60 * 2, sameSite: 'lax', httpOnly: false, secure: true }, // 2 Hour session limit to match X API lifetime
   clearExpired: true,
 }))
 
