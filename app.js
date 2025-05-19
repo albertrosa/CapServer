@@ -105,9 +105,14 @@ function generateMD5Hash(input) {
 const app = express();
 app.use(cors({
   origin: ['http://localhost:5173', 'https://captainfunfe.onrender.com', 'https://captain.fun', 'https://capserver-3eyf.onrender.com', 'https://node.captain.fun'], // Allow requests from a specific origin
-  methods: ['GET', 'POST'], // Allow only GET and POST requests
-  headers: ['Content-Type', 'Authorization'], // Allow only Content-Type and Authorization headers
-  maxAge: 3600 * 2, // Set the maximum age of the CORS configuration to 2 hour
+  // methods: ['GET', 'POST'], // Allow only GET and POST requests
+  // headers: ['Content-Type', 'Authorization'], // Allow only Content-Type and Authorization headers
+  // maxAge: 3600 * 2, // Set the maximum age of the CORS configuration to 2 hour
+
+  // suggestions from claude
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'If-None-Match', 'If-Modified-Since'], // Include cache-related headers
+  exposedHeaders: ['ETag', 'Cache-Control', 'Last-Modified'], // Expose cache headers to the client
+  maxAge: 7200, // 2 hours
   credentials: true // Send credentials with the request
 }));
 app.use(express.urlencoded({ extended: true }))
