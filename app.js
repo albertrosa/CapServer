@@ -113,7 +113,14 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'If-None-Match', 'If-Modified-Since'], // Include cache-related headers
   exposedHeaders: ['ETag', 'Cache-Control', 'Last-Modified'], // Expose cache headers to the client
   maxAge: 7200, // 2 hours
-  credentials: true // Send credentials with the request
+  credentials: true, // Send credentials with the request,
+  console: (error) => {
+    if (error.request) {
+      console.log(
+        "CORS ERROR: ", error.request.url
+      );
+    }
+  }
 }));
 app.use(express.urlencoded({ extended: true }))
 
