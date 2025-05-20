@@ -160,7 +160,7 @@ const validate = (rule_type, rule_value, user_value, choices) => {
 
             break;
         case RuleChoice:
-            const userMatch, validatorMatch;
+            let userMatch, validatorMatch;
             choices.forEach(c => {
                 if (rule_value.message.toLowerCase().indexOf(c.toLowerCase()) == -1) {
                     validatorMatch = c;
