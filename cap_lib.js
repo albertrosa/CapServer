@@ -161,17 +161,21 @@ const validate = (rule_type, rule_value, user_value, choices) => {
             break;
         case RuleChoice:
             let userMatch, validatorMatch;
+
             choices.forEach(c => {
-                if (rule_value.message.toLowerCase().indexOf(c.toLowerCase()) == -1) {
+                if (rule_value && rule_value.message.toLowerCase().indexOf(c.toLowerCase()) == -1) {
                     validatorMatch = c;
                 }
 
-                if (user_value.post.toLowerCase().indexOf(c.toLowerCase()) > -1) {
+                if (user_valaue && user_value.post.toLowerCase().indexOf(c.toLowerCase()) > -1) {
                     userMatch = c;
                 }
             });
 
-            if (userMatch === validatorMatch) {
+            console.log(validatorMatch);
+            console.log(userMatch);
+
+            if (userMatch == validatorMatch) {
                 valid = true;
             }
 
