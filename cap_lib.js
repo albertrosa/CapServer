@@ -163,11 +163,11 @@ const validate = (rule_type, rule_value, user_value, choices) => {
             let userMatch, validatorMatch;
 
             choices.forEach(c => {
-                if (rule_value && rule_value.message.toLowerCase().indexOf(c.toLowerCase()) == -1) {
+                if (rule_value.message && rule_value.message.toLowerCase().indexOf(c.toLowerCase()) == -1) {
                     validatorMatch = c;
                 }
 
-                if (user_value && user_value.post.toLowerCase().indexOf(c.toLowerCase()) > -1) {
+                if (user_value.post && user_value.post.toLowerCase().indexOf(c.toLowerCase()) > -1) {
                     userMatch = c;
                 }
             });
