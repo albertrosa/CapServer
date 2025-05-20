@@ -105,22 +105,34 @@ function generateMD5Hash(input) {
 const app = express();
 app.use(cors({
   origin: ['http://localhost:5173', 'https://captainfunfe.onrender.com', 'https://captain.fun', 'https://capserver-3eyf.onrender.com', 'https://node.captain.fun'], // Allow requests from a specific origin
-  methods: ['GET', 'POST'], // Allow only GET and POST requests
-  headers: ['Content-Type', 'Authorization'], // Allow only Content-Type and Authorization headers
-  maxAge: 3600 * 2, // Set the maximum age of the CORS configuration to 2 hour
-  credentials: true // Send credentials with the request
+  // methods: ['GET', 'POST'], // Allow only GET and POST requests
+  // headers: ['Content-Type', 'Authorization'], // Allow only Content-Type and Authorization headers
+  // maxAge: 3600 * 2, // Set the maximum age of the CORS configuration to 2 hour
+
+  // suggestions from claude
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'If-None-Match', 'If-Modified-Since'], // Include cache-related headers
+  exposedHeaders: ['ETag', 'Cache-Control', 'Last-Modified'], // Expose cache headers to the client
+  maxAge: 7200, // 2 hours
+  credentials: true, // Send credentials with the request,
+  console: (error) => {
+    if (error.request) {
+      console.log(
+        "CORS ERROR: ", error.request.url
+      );
+    }
+  }
 }));
 app.use(express.urlencoded({ extended: true }))
 
 
-//12 hours reset
+//2 hours reset
 app.use(session({
   key: 'cap_oracle_session',
   secret: process.env.session,
   store: sessionStore,
   resave: false,
   saveUninitialized: true,
-  cookie: { secured: process.env.session_secured, maxAge: 1000 * 60 * 60 * 2, sameSite: 'none', httpOnly: false, secure: true }, // 2 Hour session limit to match X API lifetime
+  cookie: { secured: process.env.session_secured, maxAge: 1000 * 60 * 60 * 2, sameSite: 'lax', httpOnly: false, secure: true }, // 2 Hour session limit to match X API lifetime
   clearExpired: true,
 }))
 
@@ -405,11 +417,6 @@ app.get('/twitter/post', async function (req, res) {
 
   const { xt, id } = req.query;
 
-  console.info('code: ', generateMD5Hash(id));
-  console.info("L: ", req.session[generateMD5Hash(id)]);
-  console.info("t: ", req.session.t);
-  console.info("session t: ", req.session.at);
-
 
   // req.session[generateMD5Hash(id)] = { "data": { "id": "1910392237394972890", "edit_history_tweet_ids": ["1910392237394972890"], "author_id": "1393563533820977159", "text": "CASTLES ARE BETTER", "created_at": "2025-04-10T17:59:37.000Z" }, "includes": { "users": [{ "profile_image_url": "https://pbs.twimg.com/profile_images/1415399629622059012/7J2sLEPz_normal.jpg", "verified": false, "verified_type": "none", "name": "WOBInteractive", "created_at": "2021-05-15T13:47:17.000Z", "id": "1393563533820977159", "username": "webofblood1" }] } };
 
@@ -430,7 +437,6 @@ app.get('/twitter/post', async function (req, res) {
       req.session.t = xt;
 
       res.send(JSON.stringify(searchResponse.data));
-      // res.send(JSON.stringify({ error: 'X SEARCH ERROR: Error', login: 0 }));
       return;
 
     } catch (err) { console.error('Search Error', err); }

@@ -160,21 +160,24 @@ const validate = (rule_type, rule_value, user_value, choices) => {
 
             break;
         case RuleChoice:
-            if (user_value.post &&
-                user_value.post.toLowerCase().indexOf(rule_value.message.toLowerCase()) > -1
-            ) {
+            let userMatch, validatorMatch;
+
+            choices.forEach(c => {
+                if (rule_value.message && rule_value.message.toLowerCase().indexOf(c.toLowerCase()) > -1) {
+                    validatorMatch = c;
+                }
+
+                if (user_value.post && user_value.post.toLowerCase().indexOf(c.toLowerCase()) > -1) {
+                    userMatch = c;
+                }
+            });
+
+            console.log('validator Match: ' + validatorMatch);
+            console.log('user Match: ' + userMatch);
+
+            if (userMatch == validatorMatch && userMatch != "") {
                 valid = true;
-
-                console.log(choices);
-
-                choices.forEach(c => {
-                    if (rule_value.message.indexOf(c) == -1 && user_value.post.indexOf(c) > -1) {
-                        valid = false;
-                    }
-                });
             }
-
-
 
 
             break;
@@ -191,6 +194,7 @@ const validate = (rule_type, rule_value, user_value, choices) => {
         case RuleValidator: // on-chain verification
         case RulePayment: // on-chain verification
         default:
+            console.log("UNSUPPORTED:" + rule_type);
             valid = true;
             break;
 
