@@ -167,7 +167,7 @@ const validate = (rule_type, rule_value, user_value, choices) => {
                     validatorMatch = c;
                 }
 
-                if (user_valaue && user_value.post.toLowerCase().indexOf(c.toLowerCase()) > -1) {
+                if (user_value && user_value.post.toLowerCase().indexOf(c.toLowerCase()) > -1) {
                     userMatch = c;
                 }
             });
