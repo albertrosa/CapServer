@@ -417,11 +417,6 @@ app.get('/twitter/post', async function (req, res) {
 
   const { xt, id } = req.query;
 
-  console.info('code: ', generateMD5Hash(id));
-  console.info("L: ", req.session[generateMD5Hash(id)]);
-  console.info("t: ", req.session.t);
-  console.info("session t: ", req.session.at);
-
 
   // req.session[generateMD5Hash(id)] = { "data": { "id": "1910392237394972890", "edit_history_tweet_ids": ["1910392237394972890"], "author_id": "1393563533820977159", "text": "CASTLES ARE BETTER", "created_at": "2025-04-10T17:59:37.000Z" }, "includes": { "users": [{ "profile_image_url": "https://pbs.twimg.com/profile_images/1415399629622059012/7J2sLEPz_normal.jpg", "verified": false, "verified_type": "none", "name": "WOBInteractive", "created_at": "2021-05-15T13:47:17.000Z", "id": "1393563533820977159", "username": "webofblood1" }] } };
 
@@ -442,7 +437,6 @@ app.get('/twitter/post', async function (req, res) {
       req.session.t = xt;
 
       res.send(JSON.stringify(searchResponse.data));
-      // res.send(JSON.stringify({ error: 'X SEARCH ERROR: Error', login: 0 }));
       return;
 
     } catch (err) { console.error('Search Error', err); }
