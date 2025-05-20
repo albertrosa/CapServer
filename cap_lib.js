@@ -163,7 +163,7 @@ const validate = (rule_type, rule_value, user_value, choices) => {
             let userMatch, validatorMatch;
 
             choices.forEach(c => {
-                if (rule_value.message && rule_value.message.toLowerCase().indexOf(c.toLowerCase()) == -1) {
+                if (rule_value.message && rule_value.message.toLowerCase().indexOf(c.toLowerCase()) > -1) {
                     validatorMatch = c;
                 }
 
@@ -172,14 +172,12 @@ const validate = (rule_type, rule_value, user_value, choices) => {
                 }
             });
 
-            console.log(validatorMatch);
-            console.log(userMatch);
+            console.log('validator Match: ' + validatorMatch);
+            console.log('user Match: ' + userMatch);
 
-            if (userMatch == validatorMatch) {
+            if (userMatch == validatorMatch && userMatch != "") {
                 valid = true;
             }
-
-
 
 
             break;
@@ -196,6 +194,7 @@ const validate = (rule_type, rule_value, user_value, choices) => {
         case RuleValidator: // on-chain verification
         case RulePayment: // on-chain verification
         default:
+            console.log("UNSUPPORTED:" + rule_type);
             valid = true;
             break;
 
