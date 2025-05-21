@@ -455,7 +455,7 @@ app.get('/twitter/post', async function (req, res) {
     console.info("Using Session");
     res.send(req.session[generateMD5Hash(id)]);
   } else {
-    res.send(JSON.stringify({ error: 'X SEARCH ERROR', login: xt ? 0 : 1 }));
+    res.send(JSON.stringify({ error: 'X SEARCH ERROR', login: xt ? 0 : 1, code: 401 })); // unauth'd
   }
   return
 }
