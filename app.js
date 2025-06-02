@@ -365,9 +365,9 @@ app.get('/twitter/follows', async function (req, res) {
   if ((req.session.at || xt) && req.session[generateMD5Hash(search)] == null) {
     //  v2 Auth Pattern         
     const timeRange = (start ? '&' + start : '') + (end ? '&' + end : '');
-    const searchResponse = await axios.get("https://api.x.com/2/tweets/search/all?query=" + search + timeRange + "&tweet.fields=created_at&expansions=author_id&max_results=100&" + userSearchFields, {
+    const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query=" + search + timeRange + "&tweet.fields=created_at&expansions=author_id&max_results=100&" + userSearchFields, {
       headers: {
-        "User-Agent": "v2AllSearchJS",
+        "User-Agent": "v2RecentSearchJS",
         "Content-Type": "application/json",
         Authorization: `Bearer ${xt}`,
       },
@@ -391,7 +391,40 @@ app.get('/twitter/follows', async function (req, res) {
   }
 }
 
+);
 
+app.get('/twitter/search', async function (req, res) {
+
+  const { xt, search, start, end } = req.query;
+
+  if ((req.session.at || xt) && req.session[generateMD5Hash(search)] == null) {
+    //  v2 Auth Pattern         
+    const timeRange = (start ? '&' + start : '') + (end ? '&' + end : '');
+    const searchResponse = await axios.get("https://api.x.com/2/tweets/search/all?query=" + search + timeRange + "&tweet.fields=created_at&expansions=author_id&max_results=100&" + userSearchFields, {
+      headers: {
+        "User-Agent": "v2RecentSearchJS",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.X_BEARER_TOKEN}`,
+      },
+    }).catch((err) => {
+      res.send(JSON.stringify(handleXAPIErrors(err)));
+      return
+    });
+
+    if (searchResponse) {
+      req.session[generateMD5Hash(search)] = JSON.stringify(searchResponse.data);
+      res.send(JSON.stringify(searchResponse.data));
+    }
+    return;
+
+
+  } else if (req.session[generateMD5Hash(search)] != null) {
+    console.info("Using Session");
+    res.send(req.session[generateMD5Hash(search)]);
+  } else {
+    res.send(JSON.stringify({ error: 'X SEARCH ERROR: Error', login: 0 }));
+  }
+}
 
 );
 
