@@ -160,7 +160,7 @@ const performUserSearch = async (users, useSession = true) => {
           Authorization: `Bearer ${token}`,
         },
       }).catch((err) => {
-        return JSON.stringify(handleXAPIErrors(err.status));
+        return JSON.stringify(handleXAPIErrors(err));
       });
     if (searchResponse) {
       return JSON.stringify(searchResponse.data);
@@ -176,7 +176,7 @@ const performUserSearch = async (users, useSession = true) => {
           Authorization: `Bearer ${token}`,
         },
       }).catch((err) => {
-        return JSON.stringify(handleXAPIErrors(err.status));
+        return JSON.stringify(handleXAPIErrors(err));
       });
     if (searchResponse) {
       return JSON.stringify(searchResponse.data);
@@ -372,7 +372,7 @@ app.get('/twitter/follows', async function (req, res) {
         Authorization: `Bearer ${xt}`,
       },
     }).catch((err) => {
-      res.send(JSON.stringify(handleXAPIErrors(err.status)));
+      res.send(JSON.stringify(handleXAPIErrors(err)));
       return
     });
 
