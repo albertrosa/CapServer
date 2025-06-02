@@ -213,12 +213,12 @@ const getXUserData = async (accessToken, req) => {
 const handleXAPIErrors = (XAPIResponseCode) => {
   switch (XAPIResponseCode.status) {
     case 401:
-      return { error: 'Authenticate', login: 1, code: XAPIResponseCode.status }
+      return { error: 'Authenticate', login: 1, code: XAPIResponseCode.status, data: XAPIResponseCode.data }
     case 429:
-      return { error: 'Too Many Request', login: 0, code: XAPIResponseCode.status }
+      return { error: 'Too Many Request', login: 0, code: XAPIResponseCode.status, data: XAPIResponseCode.data }
     default:
       console.log(XAPIResponseCode);
-      return { error: 'X SEARCH ERROR', login: 0, code: XAPIResponseCode.status }
+      return { error: 'X SEARCH ERROR', login: 0, code: XAPIResponseCode.status, data: XAPIResponseCode.data }
   }
 
 }
