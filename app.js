@@ -211,14 +211,14 @@ const getXUserData = async (accessToken, req) => {
 
 
 const handleXAPIErrors = (XAPIResponseCode) => {
-  switch (XAPIResponseCode) {
+  switch (XAPIResponseCode.status) {
     case 401:
-      return { error: 'Authenticate', login: 1, code: XAPIResponseCode }
+      return { error: 'Authenticate', login: 1, code: XAPIResponseCode.status }
     case 429:
-      return { error: 'Too Many Request', login: 0, code: XAPIResponseCode }
+      return { error: 'Too Many Request', login: 0, code: XAPIResponseCode.status }
     default:
       console.log(XAPIResponseCode);
-      return { error: 'X SEARCH ERROR', login: 0, code: XAPIResponseCode }
+      return { error: 'X SEARCH ERROR', login: 0, code: XAPIResponseCode.status }
   }
 
 }
@@ -443,7 +443,7 @@ app.get('/twitter/post', async function (req, res) {
         Authorization: `Bearer ${xt}`,
       },
     }).catch((err) => {
-      res.send(JSON.stringify(handleXAPIErrors(err.status)));
+      res.send(JSON.stringify(handleXAPIErrors(err)));
     });
 
     if (searchResponse) {
