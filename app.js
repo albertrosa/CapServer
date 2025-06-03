@@ -19,7 +19,8 @@ const cors = require("cors");
 const session = require('express-session');
 const CAPSERVER = require('./cap_lib.js');
 const { pool, sessionStore } = require('./config/database.js');
-const { performUserSearch, handleXAPIErrors, getXUserData, twitterLogInHandler } = require('./routes/twitter.js');
+const { performUserSearch, handleXAPIErrors, twitterLogInHandler, twitterLoginCallbackHandler, twitterRevokeHandler } = require('./routes/twitter.js');
+
 
 dotenv.config();
 const port = process.env.PORT || 3000;
@@ -63,116 +64,19 @@ app.use(session({
 
 const beefDap = process.env.BEEF_URI;
 
-
 app.get('/health', function (req, res) {
   res.send(`OK`);
 });
 
-
-app.get("/twitter/callback", async function (req, res) {
-  try {
-    let tmp;
-    // fresh login
-    const { code, state } = req.query;
-
-    // V2 Stuff
-    const accessToken = (await authClient.requestAccessToken(code)).token.access_token;
-
-    req.session.at = accessToken;
-    console.log('Session created');
-
-    tmp = await getXUserData(accessToken, req);
-    req.session.me = JSON.stringify(tmp);
-
-    const dat = encodeURIComponent(JSON.stringify(tmp));
-
-
-    if (isMobile(req.headers['user-agent'])) {
-      res.send(`
-        <html>
-        <body>
-          <p>Redirection to App</p>        
-          <h1><a href="${beefDap}/t/?i=${dat}">Not Redirected<a/></h1>
-          
-          <script>
-            // Pass the access token and status to the parent window
-            window.location.href="${beefDap}/t/?i=${dat}";
-            
-
-            // Close the window after a delay
-            setTimeout(() => {
-              try {
-                window.location.href="${beefDap}/t/?i=${dat}";            
-              } catch(err) {
-                
-              }
-            }, 3000); // 3 seconds delay
-          </script>
-        </body>
-        </html> `);
-    } else {
-
-      res.send(`
-        <html>
-        <body>
-          <p>You have been authenticated with this platform. You can close the window now.</p>        
-          <script>
-            // Pass the access token and status to the parent window
-            try {
-              window.opener.postMessage(
-              { token: ${JSON.stringify(accessToken)}, 
-              user: ${JSON.stringify(tmp)},
-              status: "Login successful" }, "*");
-            } catch(err) {
-              window.location.href="${beefDap}/t/?i=${dat}";
-            }
-
-            try {              
-              window.close();
-            } catch(err) {
-              window.location.href="${beefDap}/t/?i=${dat}";
-            }
-
-            window.location.href="${beefDap}/t/?i=${dat}";
-
-            // Close the window after a delay
-            setTimeout(() => {
-              try {                
-                window.close();
-              } catch(err) {
-                
-            window.location.href="${beefDap}/t/?i=${dat}";
-              }
-            }, 3000); // 3 seconds delay
-          </script>
-        </body>
-        </html>
-       `);
-    }
-  } catch (error) {
-    console.error(error);
-    res.send({ error: 'X CALLBACK ERROR: Login', login: 1 })
-  }
-});
-
+app.get("/twitter/callback", twitterLoginCallbackHandler);
 app.get("/twitter/login", twitterLogInHandler);
-
-app.get("/twitter/revoke", async function (req, res) {
-  try {
-    const response = await authClient.revokeAccessToken();
-    res.send(response);
-  } catch (error) {
-    console.error(error);
-  }
-  res.send('OK');
-});
+app.get("/twitter/revoke", twitterRevokeHandler);
 
 
 app.get("/login", async function (req, res) {
   const { xt } = req.query;
   req.session.at = xt;
 });
-
 app.get('/status', async function (req, res) {
   if (req.session.userId) {
     const tmp = {
@@ -193,6 +97,7 @@ app.get('/logout', async function (req, res) {
     res.redirect('/status');
   });
 });
+
 
 app.get('/twitter/follows', async function (req, res) {
 
@@ -228,7 +133,6 @@ app.get('/twitter/follows', async function (req, res) {
 }
 
 );
-
 app.get('/twitter/search', async function (req, res) {
 
   const { xt, search, start, end } = req.query;
@@ -265,7 +169,6 @@ app.get('/twitter/search', async function (req, res) {
 }
 
 );
-
 app.get('/twitter/users', async function (req, res) {
   const { users } = req.query;
 
@@ -299,7 +202,6 @@ app.get('/twitter/users', async function (req, res) {
     }
   }
 });
-
 app.get('/twitter/post', async function (req, res) {
 
   const { xt, id } = req.query;
@@ -333,6 +235,8 @@ app.get('/twitter/post', async function (req, res) {
 
 )
 
+
+
 app.get('/meta', async function (req, res) {
   const { send, rule } = req.query;
 
@@ -355,7 +259,6 @@ app.get('/meta', async function (req, res) {
   }
   return;
 });
-
 app.post('/meta', async function (req, res) {
   try {
     const { params } = req.body
@@ -377,7 +280,6 @@ app.post('/meta', async function (req, res) {
   }
   return;
 });
-
 app.delete('/meta', async function (req, res) {
   try {
     const { send } = req.body
@@ -403,6 +305,7 @@ app.delete('/meta', async function (req, res) {
   return;
 });
 
+
 app.post('/verify', async function (req, res) {
   try {
     const { params } = req.body
@@ -427,8 +330,8 @@ app.post('/verify', async function (req, res) {
   }
 
 });
-
 app.post('/validate', async function (req, res) { });
+
 
 app.listen(port, () => {
   console.log(`Go here to login: ${beefDap}\n${VERSION} \n ${port}`);

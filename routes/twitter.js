@@ -1,16 +1,10 @@
 // routes/twitter.js
 const axios = require("axios");
-const { auth } = require("twitter-api-sdk");
+const { authClient, STATE } = require("./auth");
 
-const STATE = "my-state";
+
 const userSearchFields = "user.fields=created_at,name,id,profile_image_url,verified,verified_type";
 
-const authClient = new auth.OAuth2User({
-    client_id: process.env.X_ACCOUNT,
-    client_secret: process.env.X_SECRET,
-    callback: process.env.BASE_URL + "/twitter/callback",
-    scopes: ["tweet.read", "users.read"],
-});
 
 
 const performUserSearch = async (users, useSession = true) => {
@@ -100,6 +94,101 @@ const twitterLogInHandler = async (req, res) => {
     res.redirect(authUrl);
 }
 
+const twitterLoginCallbackHandler = async (req, res) => {
+    try {
+        let tmp;
+        // fresh login
+        const { code, state } = req.query;
+
+        // V2 Stuff
+        const accessToken = (await authClient.requestAccessToken(code)).token.access_token;
+
+        req.session.at = accessToken;
+        console.log('Session created');
+
+        tmp = await getXUserData(accessToken, req);
+        req.session.me = JSON.stringify(tmp);
+
+        const dat = encodeURIComponent(JSON.stringify(tmp));
+
+
+        if (isMobile(req.headers['user-agent'])) {
+            res.send(`
+        <html>
+        <body>
+          <p>Redirection to App</p>        
+          <h1><a href="${beefDap}/t/?i=${dat}">Not Redirected<a/></h1>
+          
+          <script>
+            // Pass the access token and status to the parent window
+            window.location.href="${beefDap}/t/?i=${dat}";
+            
+
+            // Close the window after a delay
+            setTimeout(() => {
+              try {
+                window.location.href="${beefDap}/t/?i=${dat}";            
+              } catch(err) {
+                
+              }
+            }, 3000); // 3 seconds delay
+          </script>
+        </body>
+        </html> `);
+        } else {
+
+            res.send(`
+        <html>
+        <body>
+          <p>You have been authenticated with this platform. You can close the window now.</p>        
+          <script>
+            // Pass the access token and status to the parent window
+            try {
+              window.opener.postMessage(
+              { token: ${JSON.stringify(accessToken)}, 
+              user: ${JSON.stringify(tmp)},
+              status: "Login successful" }, "*");
+            } catch(err) {
+              window.location.href="${beefDap}/t/?i=${dat}";
+            }
+
+            try {              
+              window.close();
+            } catch(err) {
+              window.location.href="${beefDap}/t/?i=${dat}";
+            }
+
+            window.location.href="${beefDap}/t/?i=${dat}";
+
+            // Close the window after a delay
+            setTimeout(() => {
+              try {                
+                window.close();
+              } catch(err) {
+                
+            window.location.href="${beefDap}/t/?i=${dat}";
+              }
+            }, 3000); // 3 seconds delay
+          </script>
+        </body>
+        </html>
+       `);
+        }
+    } catch (error) {
+        console.error(error);
+        res.send({ error: 'X CALLBACK ERROR: Login', login: 1 })
+    }
+}
+
+const twitterRevokeHandler = async (req, res) => {
+    try {
+        const response = await authClient.revokeAccessToken();
+        res.send(response);
+    } catch (error) {
+        console.error(error);
+    }
+    res.send('OK');
+}
 
 
 
@@ -108,6 +197,7 @@ module.exports = {
     performUserSearch,
     getXUserData,
     handleXAPIErrors,
-    STATE,
     twitterLogInHandler,
+    twitterLoginCallbackHandler,
+    twitterRevokeHandler
 };
