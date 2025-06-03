@@ -10,102 +10,26 @@
 // The server is also responsible for setting up CORS to allow
 // the frontend to make requests to the server
 
-
-const crypto = require('crypto');
-const { auth } = require("twitter-api-sdk");
+const VERSION = "v0.4.0";
 const express = require("express");
 const isMobile = require('is-mobile');
 const axios = require("axios");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const session = require('express-session');
-
-
-
-// moved will verify
-
-// const MySQLStore = require("express-mysql-session")(session);
-// const mysql = require('mysql2/promise');
-const VERSION = "v0.3.1";
 const CAPSERVER = require('./cap_lib.js');
 const { pool, sessionStore } = require('./config/database.js');
-const { performUserSearch, handleXAPIErrors, getXUserData, STATE } = require('./routes/twitter.js');
+const { performUserSearch, handleXAPIErrors, getXUserData, twitterLogInHandler } = require('./routes/twitter.js');
 
 dotenv.config();
 const port = process.env.PORT || 3000;
-
-/** SESSIONS */
-// moved will verify
-// const mysql_options = {
-//   host: process.env.DB_HOST,
-//   port: process.env.DB_PORT,
-//   user: process.env.DB_USER,
-//   password: process.env.DB_PASS,
-//   database: process.env.DB_DATABASE,
-//   createDatabaseTable: true,
-// }
-
-// const sessionStore = new MySQLStore(mysql_options);
-/** END SESSIONS */
-
-
-/** DB INTERACTIONS */
-// moved will verify
-// const pool = mysql.createPool({
-//   host: process.env.DB_HOST,
-//   port: process.env.DB_PORT,
-//   user: process.env.DB_USER,
-//   password: process.env.DB_PASS,
-//   database: process.env.DB_DATABASE,
-//   waitForConnections: true,
-//   connectionLimit: 10,
-//   queueLimit: 0,
-
-// });
 
 process.on('SIGINT', async () => {
   await pool.end();
   console.log("\n\nDatabase connection pool closed");
   process.exit(0);
 });
-// MOVED WILL  VERIFY
-// async function save_meta_data(send_key, rule_key, data) {
-//   const [rows] = await pool.execute(
-//     'INSERT INTO rule_metas (send, rule, data, created) VALUES (?, ?, ?, CURRENT_TIMESTAMP)',
-//     [send_key, rule_key, data]
-//   );
-//   return rows
-// }
 
-
-// async function remove_meta_data(send_key) {
-//   const [rows] = await pool.execute(
-//     'DELETE FROM rule_metas where send = ?',
-//     [send_key]
-//   );
-//   return rows
-// }
-
-// async function get_meta_data(send_key, rule_key) {
-//   const sql = 'SELECT * FROM rule_metas where send = ? and rule = ?';
-//   const data = await pool.query(sql, [send_key, rule_key]);
-
-//   return result_handler(data);
-// }
-
-// function result_handler([row, fields]) {
-//   if (row && row.length > 1) return row;
-//   if (row && row.length == 1) return row[0];
-// }
-/** DB INTRERACTIONS */
-
-/* crypt */
-function generateMD5Hash(input) {
-  if (input) {
-    return crypto.createHash('md5').update(input.toString()).digest('hex');
-  }
-}
-/* end crypt */
 
 const app = express();
 app.use(cors({
@@ -126,7 +50,6 @@ app.use(cors({
 }));
 app.use(express.urlencoded({ extended: true }))
 
-
 //2 hours reset
 app.use(session({
   key: 'cap_oracle_session',
@@ -140,96 +63,10 @@ app.use(session({
 
 const beefDap = process.env.BEEF_URI;
 
-const authClient = new auth.OAuth2User({
-  client_id: process.env.X_ACCOUNT,
-  client_secret: process.env.X_SECRET,
-  callback: process.env.BASE_URL + "/twitter/callback",
-  scopes: ["tweet.read", "users.read"],
-});
-
-// MOVED will confirm
-// const STATE = "my-state";
-// const userSearchFields = "user.fields=created_at,name,id,profile_image_url,verified,verified_type";
-// const performUserSearch = async (users, useSession = true) => {
-
-//   const token = useSession ? req.session.at : process.env.X_BEARER_TOKEN;
-
-//   if (users.indexOf(',') > 0) {
-//     const searchResponse = await axios.get("https://api.x.com/2/users/by?usernames=" + users
-//       + "&" + userSearchFields
-//       , {
-//         headers: {
-//           "User-Agent": "v2UsersByJS",
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${token}`,
-//         },
-//       }).catch((err) => {
-//         return JSON.stringify(handleXAPIErrors(err));
-//       });
-//     if (searchResponse) {
-//       return JSON.stringify(searchResponse.data);
-//     }
-//   } else {
-//     // Single Username flow        
-//     const searchResponse = await axios.get("https://api.x.com/2/users/by/username/" + users
-//       + "?" + userSearchFields
-//       , {
-//         headers: {
-//           "User-Agent": "v2UsersByJS",
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${token}`,
-//         },
-//       }).catch((err) => {
-//         return JSON.stringify(handleXAPIErrors(err));
-//       });
-//     if (searchResponse) {
-//       return JSON.stringify(searchResponse.data);
-//     }
-//   }
-// }
-// const getXUserData = async (accessToken, req) => {
-//   const userResponse = await axios.get("https://api.twitter.com/2/users/me?user.fields=verified,verified_type,profile_image_url,public_metrics,id,username,name,created_at&expansions=pinned_tweet_id&tweet.fields=author_id,created_at", {
-//     headers: {
-//       "Content-Type": "application/json",
-//       Authorization: `Bearer ${accessToken}`,
-//     },
-//   });
-
-//   tmp = {
-//     t: req.session.at,
-//     n: userResponse.data.data.name,
-//     u: userResponse.data.data.username,
-//     i: userResponse.data.data.id,
-//     x_img: userResponse.data.data.profile_image_url,
-//     created_at: userResponse.data.data.created_at,
-//     s: null,
-//     fol_cnt: userResponse.data.data.public_metrics.followers_count,
-//     friend_cnt: userResponse.data.data.public_metrics.following_count,
-//     verified: userResponse.data.data.verified,
-//     verified_type: userResponse.data.data.verified_type,
-//   }
-
-//   return tmp;
-// }
-// const handleXAPIErrors = (XAPIResponseCode) => {
-//   switch (XAPIResponseCode.status) {
-//     case 401:
-//       return { error: 'Authenticate', login: 1, code: XAPIResponseCode.status, data: XAPIResponseCode }
-//     case 429:
-//       return { error: 'Too Many Request', login: 0, code: XAPIResponseCode.status, data: XAPIResponseCode }
-//     default:
-//       console.log(XAPIResponseCode);
-//       return { error: 'X SEARCH ERROR', login: 0, code: XAPIResponseCode.status, data: XAPIResponseCode }
-//   }
-
-// }
 
 app.get('/health', function (req, res) {
   res.send(`OK`);
 });
-
-
-
 
 
 app.get("/twitter/callback", async function (req, res) {
@@ -318,14 +155,7 @@ app.get("/twitter/callback", async function (req, res) {
   }
 });
 
-app.get("/twitter/login", async function (req, res) {
-  // V2 Auth
-  const authUrl = authClient.generateAuthURL({
-    state: STATE,
-    code_challenge_method: "s256",
-  });
-  res.redirect(authUrl);
-});
+app.get("/twitter/login", twitterLogInHandler);
 
 app.get("/twitter/revoke", async function (req, res) {
   try {

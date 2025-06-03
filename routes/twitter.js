@@ -1,9 +1,17 @@
 // routes/twitter.js
 const axios = require("axios");
+const { auth } = require("twitter-api-sdk");
 
 const STATE = "my-state";
-
 const userSearchFields = "user.fields=created_at,name,id,profile_image_url,verified,verified_type";
+
+const authClient = new auth.OAuth2User({
+    client_id: process.env.X_ACCOUNT,
+    client_secret: process.env.X_SECRET,
+    callback: process.env.BASE_URL + "/twitter/callback",
+    scopes: ["tweet.read", "users.read"],
+});
+
 
 const performUserSearch = async (users, useSession = true) => {
 
@@ -83,6 +91,16 @@ const handleXAPIErrors = (XAPIResponseCode) => {
 }
 
 
+const twitterLogInHandler = async (req, res) => {
+    // V2 Auth
+    const authUrl = authClient.generateAuthURL({
+        state: STATE,
+        code_challenge_method: "s256",
+    });
+    res.redirect(authUrl);
+}
+
+
 
 
 
@@ -91,4 +109,5 @@ module.exports = {
     getXUserData,
     handleXAPIErrors,
     STATE,
+    twitterLogInHandler,
 };
