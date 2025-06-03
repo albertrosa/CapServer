@@ -10,19 +10,21 @@
 // The server is also responsible for setting up CORS to allow
 // the frontend to make requests to the server
 
-const VERSION = "v0.4.0";
 const express = require("express");
-const axios = require("axios");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const session = require('express-session');
-const CAPSERVER = require('./cap_lib.js');
 const { pool, sessionStore } = require('./config/database.js');
-const { performUserSearch, handleXAPIErrors, twitterLogInHandler, twitterLoginCallbackHandler, twitterRevokeHandler } = require('./routes/twitter.js');
+const { twitterLogInHandler, twitterLoginCallbackHandler, twitterRevokeHandler,
+  twitterRecentSearchHandler, twitterSearchHandler, twitterPostSearchHandler, twitterUserSearchHandler
+} = require('./routes/twitter.js');
+const { metaLookUpHandler, metaSaveHandler, metaDeleteHandler } = require("./routes/meta.js");
+const { verifyHandler } = require("./routes/validator.js");
 
 dotenv.config();
 const port = process.env.PORT || 3000;
 const beefDap = process.env.BEEF_URI;
+const VERSION = "v0.4.0";
 
 process.on('SIGINT', async () => {
   await pool.end();
@@ -65,16 +67,6 @@ app.use(session({
 app.get('/health', function (req, res) {
   res.send(`OK`);
 });
-
-app.get("/twitter/callback", twitterLoginCallbackHandler);
-app.get("/twitter/login", twitterLogInHandler);
-app.get("/twitter/revoke", twitterRevokeHandler);
-
-
-app.get("/login", async function (req, res) {
-  const { xt } = req.query;
-  req.session.at = xt;
-});
 app.get('/status', async function (req, res) {
   if (req.session.userId) {
     const tmp = {
@@ -85,9 +77,7 @@ app.get('/status', async function (req, res) {
     res.send(JSON.stringify({ error: 'Login', login: 1 }));
   }
 });
-
 app.get('/logout', async function (req, res) {
-
   req.session.destroy((err) => {
     if (err) {
       console.error(err);
@@ -97,238 +87,20 @@ app.get('/logout', async function (req, res) {
 });
 
 
-app.get('/twitter/follows', async function (req, res) {
 
-  const { xt, search, start, end } = req.query;
+app.get("/twitter/callback", twitterLoginCallbackHandler);
+app.get("/twitter/login", twitterLogInHandler);
+app.get("/twitter/revoke", twitterRevokeHandler);
+app.get('/twitter/follows', twitterRecentSearchHandler);
+app.get('/twitter/search', twitterSearchHandler);
+app.get('/twitter/users', twitterUserSearchHandler);
+app.get('/twitter/post', twitterPostSearchHandler)
 
-  if ((req.session.at || xt) && req.session[generateMD5Hash(search)] == null) {
-    //  v2 Auth Pattern         
-    const timeRange = (start ? '&' + start : '') + (end ? '&' + end : '');
-    const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query=" + search + timeRange + "&tweet.fields=created_at&expansions=author_id&max_results=100&" + userSearchFields, {
-      headers: {
-        "User-Agent": "v2RecentSearchJS",
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${xt}`,
-      },
-    }).catch((err) => {
-      res.send(JSON.stringify(handleXAPIErrors(err)));
-      return
-    });
+app.get('/meta', metaLookUpHandler);
+app.post('/meta', metaSaveHandler);
+app.delete('/meta', metaDeleteHandler);
 
-    if (searchResponse) {
-      req.session[generateMD5Hash(search)] = JSON.stringify(searchResponse.data);
-      res.send(JSON.stringify(searchResponse.data));
-    }
-    return;
-
-
-  } else if (req.session[generateMD5Hash(search)] != null) {
-    console.info("Using Session");
-    res.send(req.session[generateMD5Hash(search)]);
-  } else {
-    res.send(JSON.stringify({ error: 'X SEARCH ERROR: Error', login: 0 }));
-  }
-}
-
-);
-app.get('/twitter/search', async function (req, res) {
-
-  const { xt, search, start, end } = req.query;
-
-  if ((req.session.at || xt) && req.session[generateMD5Hash(search)] == null) {
-
-
-    //  v2 Auth Pattern         
-    const timeRange = (start ? '&' + start : '') + (end ? '&' + end : '');
-    const searchResponse = await axios.get("https://api.x.com/2/tweets/search/all?query=" + search + timeRange + "&tweet.fields=created_at&expansions=author_id&max_results=100&" + userSearchFields, {
-      headers: {
-        "User-Agent": "v2RecentSearchJS",
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.X_BEARER_TOKEN}`,
-      },
-    }).catch((err) => {
-      res.send(JSON.stringify(handleXAPIErrors(err)));
-      return
-    });
-
-    if (searchResponse) {
-      req.session[generateMD5Hash(search)] = JSON.stringify(searchResponse.data);
-      res.send(JSON.stringify(searchResponse.data));
-    }
-    return;
-
-
-  } else if (req.session[generateMD5Hash(search)] != null) {
-    console.info("Using Session");
-    res.send(req.session[generateMD5Hash(search)]);
-  } else {
-    res.send(JSON.stringify({ error: 'X SEARCH ERROR: Error', login: 0 }));
-  }
-}
-
-);
-app.get('/twitter/users', async function (req, res) {
-  const { users } = req.query;
-
-  if ((req.session.at) && req.session[generateMD5Hash(users)] == null) {
-
-    if (users && users.length > 0) {
-      try {
-        const searched = await performUserSearch(users)
-        req.session[generateMD5Hash(users)] = searched;
-        res.send(searched);
-      } catch (err) {
-        res.send(JSON.stringify({ error: 'X SEARCH ERROR: Login', login: 1 }));
-      }
-
-    } else {
-      res.send(JSON.stringify({ error: 'X SEARCH ERROR: NO Params', login: 0 }));
-    }
-
-  } else if (req.session[generateMD5Hash(users)] != null) {
-    console.info("loading from cache");
-    // saved as JSON STRING
-    res.send(req.session[generateMD5Hash(users)]);
-  } else {
-    if (users && users.length > 0) {
-      // User Search Application Search
-      const searched = await performUserSearch(users, false);
-      req.session[generateMD5Hash(users)] = searched;
-      res.send(searched);
-    } else {
-      res.send(JSON.stringify({ error: 'X SEARCH ERROR: NO Params', login: 0 }));
-    }
-  }
-});
-app.get('/twitter/post', async function (req, res) {
-
-  const { xt, id } = req.query;
-  // Keep for Session saver for dev purposes
-  // req.session[generateMD5Hash(id)] = { "data": { "id": "1910392237394972890", "edit_history_tweet_ids": ["1910392237394972890"], "author_id": "1393563533820977159", "text": "CASTLES ARE BETTER", "created_at": "2025-04-10T17:59:37.000Z" }, "includes": { "users": [{ "profile_image_url": "https://pbs.twimg.com/profile_images/1415399629622059012/7J2sLEPz_normal.jpg", "verified": false, "verified_type": "none", "name": "WOBInteractive", "created_at": "2021-05-15T13:47:17.000Z", "id": "1393563533820977159", "username": "webofblood1" }] } };
-
-  if ((req.session.at || xt) && id && req.session[generateMD5Hash(id)] == null) {
-    const searchResponse = await axios.get("https://api.x.com/2/tweets/" + id + "?tweet.fields=created_at,text&expansions=author_id&" + userSearchFields, {
-      headers: {
-        "User-Agent": "v2RecentSearchJS",
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${xt}`,
-      },
-    }).catch((err) => {
-      res.send(JSON.stringify(handleXAPIErrors(err)));
-    });
-
-    if (searchResponse) {
-      req.session[generateMD5Hash(id)] = searchResponse.data;
-      req.session.t = xt;
-      res.send(JSON.stringify(searchResponse.data));
-    }
-  } else if (id && req.session[generateMD5Hash(id)] != null) {
-    console.info("Using Session");
-    res.send(req.session[generateMD5Hash(id)]);
-  } else {
-    res.send(JSON.stringify({ error: 'X SEARCH ERROR', login: xt ? 0 : 1, code: 401 })); // unauth'd
-  }
-  return
-}
-
-)
-
-
-
-app.get('/meta', async function (req, res) {
-  const { send, rule } = req.query;
-
-  if (req.session[rule] == null) {
-
-    try {
-      const result = await get_meta_data(send, rule);
-      if (result) {
-        res.send(JSON.stringify({ data: result }));
-        return;
-      }
-    } catch (err) {
-      console.error(err);
-    }
-
-    res.send(JSON.stringify({ error: 'META ERROR: NO Data', login: 0 }));
-  } else if (req.session[rule] != null) {
-    console.info("Using Session");
-    res.send(req.session[rule]);
-  }
-  return;
-});
-app.post('/meta', async function (req, res) {
-  try {
-    const { params } = req.body
-
-    try {
-      const result = await save_meta_data(params.send, params.rule, params.data);
-      if (result) {
-        res.send(JSON.stringify({ status: 'Saved' }));
-      } else {
-        res.send(JSON.stringify({ error: 'Save META ERROR' }));
-      }
-    } catch (err) {
-      console.error(err);
-      res.send(JSON.stringify({ error: 'Save META ERROR' }));
-    }
-  } catch (err) {
-    console.error(err)
-    res.send(JSON.stringify({ error: 'META ERROR' }));
-  }
-  return;
-});
-app.delete('/meta', async function (req, res) {
-  try {
-    const { send } = req.body
-    try {
-      const result = await remove_meta_data(send);
-      if (result) {
-        res.send(JSON.stringify({ status: 'Removed' }));
-      } else {
-        res.send(JSON.stringify({ error: 'Removal META ERROR' }));
-      }
-    } catch (err) {
-      res.send(JSON.stringify({ error: 'Removal META ERROR' }));
-      console.error(err);
-    }
-  } catch (err) {
-    console.error(err)
-    res.send(JSON.stringify({ error: 'META ERROR' }));
-    return;
-  }
-
-
-
-  return;
-});
-
-
-app.post('/verify', async function (req, res) {
-  try {
-    const { params } = req.body
-
-    let rul = '';
-    const passed = CAPSERVER.validate(params.style, params.data, params.user, params.choices)
-
-    // the rule has passed second tier validation
-    if (passed) {
-      const [validIns, validMessage] = CAPSERVER.verify(params.u, params.style);
-      console.log(validMessage, validIns);
-
-      res.send(JSON.stringify({ status: 'Done', msg: rul, message: validMessage, instruction: validIns }));
-    } else {
-      res.send(JSON.stringify({ status: 'Done', msg: rul, message: 'Invalid', instruction: null }));
-    }
-    return;
-  } catch (err) {
-    console.error(err)
-    res.send(JSON.stringify({ error: 'Verification ERROR' }));
-    return;
-  }
-
-});
-app.post('/validate', async function (req, res) { });
+app.post('/verify', verifyHandler);
 
 
 app.listen(port, () => {
