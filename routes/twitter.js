@@ -4,6 +4,11 @@ const { authClient, STATE } = require("./auth");
 const isMobile = require('is-mobile');
 
 
+const dotenv = require("dotenv");
+dotenv.config();
+const beefDap = process.env.BEEF_URI;
+
+
 const userSearchFields = "user.fields=created_at,name,id,profile_image_url,verified,verified_type";
 
 

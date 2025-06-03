@@ -12,7 +12,6 @@
 
 const VERSION = "v0.4.0";
 const express = require("express");
-const isMobile = require('is-mobile');
 const axios = require("axios");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -21,9 +20,9 @@ const CAPSERVER = require('./cap_lib.js');
 const { pool, sessionStore } = require('./config/database.js');
 const { performUserSearch, handleXAPIErrors, twitterLogInHandler, twitterLoginCallbackHandler, twitterRevokeHandler } = require('./routes/twitter.js');
 
-
 dotenv.config();
 const port = process.env.PORT || 3000;
+const beefDap = process.env.BEEF_URI;
 
 process.on('SIGINT', async () => {
   await pool.end();
@@ -62,7 +61,6 @@ app.use(session({
   clearExpired: true,
 }))
 
-const beefDap = process.env.BEEF_URI;
 
 app.get('/health', function (req, res) {
   res.send(`OK`);
