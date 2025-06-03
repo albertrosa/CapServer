@@ -1,6 +1,7 @@
 // routes/twitter.js
 const axios = require("axios");
 const { authClient, STATE } = require("./auth");
+const isMobile = require('is-mobile');
 
 
 const userSearchFields = "user.fields=created_at,name,id,profile_image_url,verified,verified_type";
