@@ -29,7 +29,7 @@ const session = require('express-session');
 const VERSION = "v0.3.1";
 const CAPSERVER = require('./cap_lib.js');
 const { pool, sessionStore } = require('./config/database.js');
-
+const { performUserSearch, handleXAPIErrors, getXUserData, STATE } = require('./routes/twitter.js');
 
 dotenv.config();
 const port = process.env.PORT || 3000;
@@ -230,7 +230,7 @@ app.get('/health', function (req, res) {
 
 
 
-const { performUserSearch, handleXAPIErrors, getXUserData } = require('./routes/twitter.js');
+
 
 app.get("/twitter/callback", async function (req, res) {
   try {
