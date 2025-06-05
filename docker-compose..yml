@@ -1,0 +1,11 @@
+version: "3.7"
+
+services:
+  capserver:
+    build: . 
+    restart: always
+    ports: 
+      - "3000:3000"
+      - "8080:8080"
+      - "80:80"
+    env_file: .env

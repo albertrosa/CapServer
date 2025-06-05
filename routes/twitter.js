@@ -1,6 +1,8 @@
 // routes/twitter.js
 const axios = require("axios");
 const { authClient, STATE } = require("./auth");
+
+const {generateMD5Hash} = require("./utils/cryptoUtils");
 const isMobile = require('is-mobile');
 
 

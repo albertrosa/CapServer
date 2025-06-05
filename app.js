@@ -86,8 +86,6 @@ app.get('/logout', async function (req, res) {
   });
 });
 
-
-
 app.get("/twitter/callback", twitterLoginCallbackHandler);
 app.get("/twitter/login", twitterLogInHandler);
 app.get("/twitter/revoke", twitterRevokeHandler);
@@ -101,7 +99,6 @@ app.post('/meta', metaSaveHandler);
 app.delete('/meta', metaDeleteHandler);
 
 app.post('/verify', verifyHandler);
-
 
 app.listen(port, () => {
   console.log(`Go here to login: ${beefDap}\n${VERSION} \n ${port}`);
