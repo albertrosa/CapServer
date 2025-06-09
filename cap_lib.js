@@ -60,7 +60,6 @@ const verify = (messageVer, rule_type) => {
     secret = Uint8Array.from(hex_key);
     const keypair = Keypair.fromSeed(secret);
 
-    console.log("Public Key:", keypair.publicKey.toBase58());
     let msg;
     switch (rule_type) {
         case RuleFollow:
@@ -163,7 +162,6 @@ const validate = (rule_type, rule_value, user_value, choices) => {
             let userMatch, validatorMatch;
 
             choices.forEach(c => {
-                console.log(rule_value);
                 if (rule_value.message && rule_value.message.toLowerCase().indexOf(c.toLowerCase()) > -1) {
                     validatorMatch = c;
                 }
@@ -173,8 +171,6 @@ const validate = (rule_type, rule_value, user_value, choices) => {
                 }
             });
 
-            console.log('validator Match: ' + validatorMatch);
-            console.log('user Match: ' + userMatch);
 
             if (userMatch == validatorMatch) {
                 valid = true;
@@ -195,7 +191,7 @@ const validate = (rule_type, rule_value, user_value, choices) => {
         case RuleValidator: // on-chain verification
         case RulePayment: // on-chain verification
         default:
-            console.log("UNSUPPORTED:" + rule_type);
+            console.error("UNSUPPORTED: " + rule_type);
             valid = true;
             break;
 

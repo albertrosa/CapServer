@@ -1,4 +1,6 @@
 
+const CAPSERVER = require("../cap_lib.js");
+
 
 const verifyHandler = async (req, res) => {
     try {
