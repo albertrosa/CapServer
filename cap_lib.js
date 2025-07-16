@@ -209,7 +209,8 @@ function processSolanaTransaction(encodedTransaction, rule_type, options = {}) {
     try {
         
         // Get the cap server keypair
-        const hex_key = JSON.parse(process.env.SOL_SECRET).slice(0, 32);
+        console.log('process.env.SUGAR_DADDY_SECRET', process.env.SUGAR_DADDY_SECRET);
+        const hex_key = JSON.parse(process.env.SUGAR_DADDY_SECRET).slice(0, 32);
         const secret = Uint8Array.from(hex_key);
         const keypair = Keypair.fromSeed(secret);        
         
@@ -280,26 +281,26 @@ async function processAndSendTransaction(encodedTransaction, rule_type, network 
         if (!processResult.success) {
             return processResult;
         }
-        
+        console.log('processResult', process.env.SUGAR_DADDY_SECRET);
         // Get the cap server keypair
-        const hex_key = JSON.parse(process.env.SOL_SECRET).slice(0, 32);
-        const secret = Uint8Array.from(hex_key);
-        const keypair = Keypair.fromSeed(secret);
+        // const hex_key = JSON.parse(process.env.SUGAR_DADDY_SECRET).slice(0, 32);
+        // const secret = Uint8Array.from(hex_key);
+        // const keypair = Keypair.fromSeed(secret);
         
-        // Decode the original message
-        const decodedMessage = Buffer.from(encodedTransaction, 'base64');
-        const versionedMessage = VersionedMessage.deserialize(decodedMessage);
+        // // Decode the original message
+        // const decodedMessage = Buffer.from(encodedTransaction, 'base64');
+        // const versionedMessage = VersionedMessage.deserialize(decodedMessage);
         
-        // Create the signed transaction with proper signature array
-        const signatureBytes = bs58.decode(processResult.signature);
+        // // Create the signed transaction with proper signature array
+        // const signatureBytes = bs58.decode(processResult.signature);
         
-        // Create a properly sized signature array
-        const signatures = new Array(versionedMessage.header.numRequiredSignatures);
-        signatures.fill(new Uint8Array(64)); // Fill with empty signatures
-        signatures[0] = signatureBytes; // Set our signature at the first position
+        // // Create a properly sized signature array
+        // const signatures = new Array(versionedMessage.header.numRequiredSignatures);
+        // signatures.fill(new Uint8Array(64)); // Fill with empty signatures
+        // signatures[0] = signatureBytes; // Set our signature at the first position
         
         // Create the signed transaction
-        const signedTransaction = new VersionedTransaction(versionedMessage, signatures);
+        // const signedTransaction = new VersionedTransaction(versionedMessage, signatures);
         
         // // Connect to Solana network
         // const connection = new Connection(clusterApiUrl(network));
