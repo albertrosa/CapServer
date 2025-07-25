@@ -142,16 +142,11 @@ app.post('/validate-transaction', async function (req, res) {
 });
 
 app.post('/process-transaction', async function (req, res) {
-  console.log('HI how you doing?');
-  console.log(req.body);
-  // console.log(JSON.parse(req.body));
-  // try {
+  
+  console.log(JSON.parse(req.body));
+  try {
     
     const { encodedTransaction, rule_type } = req.body;
-
-    console.log(encodedTransaction);
-    console.log(rule_type);
-
 
     if (!encodedTransaction || !rule_type) {
       res.status(400).send(JSON.stringify({ 
@@ -179,15 +174,15 @@ app.post('/process-transaction', async function (req, res) {
     }
     
     return;
-  // } catch (err) {
-  //   console.error('Transaction processing error:', err);
-  //   console.log('Transaction processing error:', err);
-  //   res.status(500).send(JSON.stringify({ 
-  //     error: 'Internal server error during transaction processing',
-  //     details: err.message
-  //   }));
-  //   return;
-  // }
+  } catch (err) {
+    console.error('Transaction processing error:', err);
+    console.log('Transaction processing error:', err);
+    res.status(500).send(JSON.stringify({ 
+      error: 'Internal server error during transaction processing',
+      details: err.message
+    }));
+    return;
+  }
 });
 
 app.post('/process-and-send-transaction', async function (req, res) {
