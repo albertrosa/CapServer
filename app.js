@@ -104,10 +104,7 @@ function generateMD5Hash(input) {
 
 const app = express();
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://captainfunfe.onrender.com', 'https://captain.fun', 'https://capserver-3eyf.onrender.com', 'https://node.captain.fun', 
-          'http://localhost:5174', 'https://xp.xyz', 'https://stagehand-react.xp.xyz', 'https://alpha.ticketdex.xyz'
-
-  ], // Allow requests from a specific origin
+  origin: '*', // Allow requests from any origin
 
   // suggestions from claude
   allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'If-None-Match', 'If-Modified-Since'], // Include cache-related headers
