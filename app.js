@@ -916,7 +916,7 @@ app.post('/sug-mama-exchange', async function (req, res) {
           amount * Math.pow(10, 6),
           6, // PYUSDC decimals
           [],
-          TOKEN_2022_PROGRAM_ID
+          PYUSD_PROGID
         )
       );
       const { blockhash } = await connection.getLatestBlockhash();
