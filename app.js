@@ -817,84 +817,13 @@ app.post('/sug-mama-exchange', async function (req, res) {
       }));
       return;
     }
-
-    
     const connection = new Connection(process.env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com', 'confirmed');
-    // Create public keys
+    console.log("connection.rpcEndpoint: ", connection.rpcEndpoint);
     const walletPubkey = new PublicKey(wallet);
-/* Keep for reference 
-    // TODO add catch to create the associated token account
-    const UserUSDCTokenAccount = await splToken.getOrCreateAssociatedTokenAccount(
-      connection,
-      walletPubkey,  /// payer - change to daddyKeyPair
-      USDC_MINT,
-      walletPubkey,
-      false,
-      TOKEN_2022_PROGRAM_ID
-    );
-    // TODO add catch to create the associated token account
-    const MamaUSDCTokenAccount = await splToken.getOrCreateAssociatedTokenAccount(
-      connection,
-      daddyKeyPair.publicKey,  /// payer - change to daddyKeyPair
-      USDC_MINT,
-      mamaTokenPubkey,
-      false,
-      TOKEN_2022_PROGRAM_ID
-    );
-
-    const MamaPUSDCTokenAccount = await splToken.getAssociatedTokenAddressSync(
-      PYUSDC_MINT,
-      mamaTokenPubkey,
-      false,
-      TOKEN_2022_PROGRAM_ID
-    );
-    const UserPUSDCTokenAccount = await splToken.getAssociatedTokenAddressSync(
-      PYUSDC_MINT,
-      walletPubkey,
-      false,
-      TOKEN_2022_PROGRAM_ID
-    );
-    // Create transaction
-    const transaction = new Transaction();
-    // Transfer SPL tokens
-    const transferInstructionUSDCToken = splToken.createTransferInstruction(      
-      UserUSDCTokenAccount, // fromTokenAccount,
-      MamaUSDCTokenAccount, // toTokenAccount,
-      walletPubkey,
-      new BN(parseInt(amount * Math.pow(10, 6))),
-      TOKEN_PROGRAM_ID
-    );    
-    // const transferInstructionPUSDCToken = splToken.createTransferInstruction(      
-    //   MamaUSDCTokenAccount, // fromTokenAccount,
-    //   UserPUSDCTokenAccount, // toTokenAccount,
-    //   walletPubkey,
-    //   parseInt(amount),
-    //   [],      
-    // );  
-    transaction.add(transferInstructionUSDCToken);
-    // transaction.add(transferInstructionPUSDCToken);
-    // Get recent blockhash
-    const { blockhash } = await connection.getLatestBlockhash();
-    transaction.recentBlockhash = blockhash;
-    transaction.feePayer = walletPubkey;
-
-    // Serialize transaction
-    const serializedTransaction = transaction.serialize({
-      requireAllSignatures: false,
-      verifySignatures: false
-    });
-    // const signature = await connection.sendTransaction(transaction, [walletPubkey]);
-    // transaction.sign(mamaKeyPair);
-    // transaction.partialSign(mamaKeyPair);
-    */
-
-    /** NEW CODE */
-/** transaction construction */
+    /** transaction construction */
 
       // Helper function to safely get or create token account
       const getOrCreateTokenAccount = async (owner, mint, tokenProgramId=TOKEN_PROGRAM_ID) => {
-      
-        
         try {
           // First try to get the existing token account
           const tokenAccount = await splToken.getAssociatedTokenAddress(
@@ -911,9 +840,7 @@ app.post('/sug-mama-exchange', async function (req, res) {
             console.log(`Token account exists for ${owner.toString()}`);
             return [tokenAccount, null];
           } else {
-            console.log(`Creating token account for ${owner.toString()}`);
-            // Create the token account
-            // const createAccountTx = new Transaction().add(
+              console.log(`Creating token account for ${owner.toString()}`);            
               const instruction = createAssociatedTokenAccountInstruction(
                 daddyTokenPubkey, // payer
                 tokenAccount, // associated token account
@@ -921,16 +848,6 @@ app.post('/sug-mama-exchange', async function (req, res) {
                 mint, // mint
                 tokenProgramId
               )
-            // );
-            
-            // const { blockhash } = await program.provider.connection.getLatestBlockhash();
-            // createAccountTx.recentBlockhash = blockhash;
-            // createAccountTx.feePayer = anchorWallet.publicKey;
-            
-            // const signedTx = await anchorWallet.signTransaction(createAccountTx);
-            // const txId = await program.provider.connection.sendRawTransaction(signedTx.serialize());
-            
-            // console.log(`Created token account: ${txId}`);
             return [tokenAccount, instruction];
           }
         } catch (error) {
@@ -961,7 +878,6 @@ app.post('/sug-mama-exchange', async function (req, res) {
         TOKEN_2022_PROGRAM_ID
       );
 
-      
       const transaction = new Transaction();
       if (createInstructionUserUSDC) {
         transaction.add(createInstructionUserUSDC);
@@ -974,9 +890,7 @@ app.post('/sug-mama-exchange', async function (req, res) {
       }
       if (createInstructionMamaEURC) {
         transaction.add(createInstructionMamaEURC);
-      }       
-
-      
+      }     
       transaction.add(
         new createTransferInstruction(
           UserUSDCTokenAccount,
@@ -997,20 +911,17 @@ app.post('/sug-mama-exchange', async function (req, res) {
       );
       const { blockhash } = await connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
-      // TODO: Chagne to suga daddy key pair and send to sign
-      transaction.feePayer = daddyTokenPubkey;//MAMA_PUBLIC_KEY; //wallet.publicKey;
+      transaction.feePayer = daddyTokenPubkey;
 
     const encodedTransaction2 = transaction.serializeMessage();
     /** end transaction construction */
 
-    /** END NEW CODE */
+    
 
- // Process and send the transaction using the cap server
+    // Process and send the transaction using the cap server
 
         const result = await CAPSERVER.processAndSendSugaMamaTransaction(encodedTransaction2);
         const payerResult = await CAPSERVER.processAndSendTransaction(encodedTransaction2, null, null);
-        // const processResult = processSolanaTransaction(encodedTransaction, rule_type, options);
-
 
         if (result.success) {
           res.send(JSON.stringify({
@@ -1031,8 +942,6 @@ app.post('/sug-mama-exchange', async function (req, res) {
             stack: result.stack
           }));
         }
-
-
 
 
   } catch (err) {
