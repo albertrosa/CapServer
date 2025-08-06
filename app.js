@@ -813,17 +813,18 @@ app.post('/sug-mama-exchange', async function (req, res) {
   const PYUSD_PROGID = TOKEN_2022_PROGRAM_ID
 
   try {
-    const { wallet, amount} = req.body;
+    const { wallet, amount, payoutWallet} = req.body;
 
-    if (!wallet || !amount) {
+    if (!wallet || !amount || !payoutWallet) {
       res.status(400).send(JSON.stringify({ 
-        error: 'Missing required parameters: wallet, amount' 
+        error: 'Missing required parameters: wallet, amount, payoutWallet' 
       }));
       return;
     }
     const connection = new Connection(process.env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com', 'confirmed');
     console.log("connection.rpcEndpoint: ", connection.rpcEndpoint);
     const walletPubkey = new PublicKey(wallet);
+    const payoutPubkey = new PublicKey(payoutWallet);
     /** transaction construction */
 
       // Helper function to safely get or create token account
@@ -871,7 +872,7 @@ app.post('/sug-mama-exchange', async function (req, res) {
       );
       
       const [UserEURCTokenAccount, createInstructionUserEURC] = await getOrCreateTokenAccount(
-        walletPubkey,
+        payoutPubkey,
         PYUSDC_MINT,
         PYUSD_PROGID
       );
