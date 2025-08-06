@@ -807,11 +807,14 @@ app.post('/sug-mama-exchange', async function (req, res) {
   //Devnet: HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr
   //mainnet:  2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo
   const PYUSDC_MINT = new PublicKey("2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo");
+  //Devnet: TOKEN_PROGRAM_ID
+  //mainnet: TOKEN_2022_PROGRAM_ID
+  const PYUSD_PROGID = TOKEN_2022_PROGRAM_ID
 
   try {
-    const { wallet, amount, encodedTransaction} = req.body;
+    const { wallet, amount} = req.body;
 
-    if (!wallet || !amount || !encodedTransaction) {
+    if (!wallet || !amount) {
       res.status(400).send(JSON.stringify({ 
         error: 'Missing required parameters: wallet, amount' 
       }));
@@ -869,13 +872,13 @@ app.post('/sug-mama-exchange', async function (req, res) {
       const [UserEURCTokenAccount, createInstructionUserEURC] = await getOrCreateTokenAccount(
         walletPubkey,
         PYUSDC_MINT,
-        TOKEN_2022_PROGRAM_ID
+        PYUSD_PROGID
       );
 
       const [MamaEURCTokenAccount, createInstructionMamaEURC] = await getOrCreateTokenAccount(
         mamaTokenPubkey,
         PYUSDC_MINT,
-        TOKEN_2022_PROGRAM_ID
+        PYUSD_PROGID
       );
 
       const transaction = new Transaction();
@@ -906,7 +909,7 @@ app.post('/sug-mama-exchange', async function (req, res) {
           UserEURCTokenAccount,
           mamaTokenPubkey,
           new BN(amount * Math.pow(10, 6)),                
-          TOKEN_2022_PROGRAM_ID
+          PYUSD_PROGID
         )
       );
       const { blockhash } = await connection.getLatestBlockhash();
