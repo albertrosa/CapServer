@@ -796,6 +796,7 @@ app.post('/validate', async function (req, res) { });
 
 app.post('/sug-mama-exchange', async function (req, res) {
   // Parse the JSON string back to array
+  console.log("process.env.SUGAR_MAMMA_SECRET: ", process.env.SUGAR_MAMMA_SECRET);
   const mamaKeyPair = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SUGAR_MAMMA_SECRET)));
   const daddyKeyPair = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SUGAR_DADDY_SECRET)));
   const mamaTokenPubkey = mamaKeyPair.publicKey;
@@ -803,13 +804,13 @@ app.post('/sug-mama-exchange', async function (req, res) {
 
   //Devnet 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
   //mainnet: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
-  const USDC_MINT = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+  const USDC_MINT = new PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
   //Devnet: HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr
   //mainnet:  2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo
-  const PYUSDC_MINT = new PublicKey("2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo");
+  const PYUSDC_MINT = new PublicKey("HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr");
   //Devnet: TOKEN_PROGRAM_ID
   //mainnet: TOKEN_2022_PROGRAM_ID
-  const PYUSD_PROGID = TOKEN_2022_PROGRAM_ID
+  const PYUSD_PROGID = TOKEN_PROGRAM_ID
 
   try {
     const { wallet, amount} = req.body;
