@@ -24,6 +24,10 @@ const MySQLStore = require("express-mysql-session")(session);
 const mysql = require('mysql2/promise');
 const VERSION = "v0.3.1";
 const CAPSERVER = require('./cap_lib.js');
+const { Connection, PublicKey, Transaction, Token, ASSOCIATED_TOKEN_PROGRAM_ID, Keypair } = require('@solana/web3.js');
+const { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, createTransferCheckedInstruction, createTransferInstruction } = require("@solana/spl-token");
+const splToken = require("@solana/spl-token");
+const BN = require('bn.js');
 
 
 
@@ -790,6 +794,255 @@ app.post('/send-versioned-message', async function (req, res) {
 });
 
 app.post('/validate', async function (req, res) { });
+
+
+app.post('/sug-mama-exchange', async function (req, res) {
+  // Parse the JSON string back to array
+  const mamaKeyPair = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SUGAR_MAMMA_SECRET)));
+  const daddyKeyPair = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SUGAR_DADDY_SECRET)));
+  const mamaTokenPubkey = mamaKeyPair.publicKey;
+  const daddyTokenPubkey = daddyKeyPair.publicKey;
+
+  //Devnet 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
+  //mainnet: 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
+  const USDC_MINT = new PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
+  //Devnet: HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr
+  //mainnet:  CXk2AMBfi3TwaEL2468s6zP8xq9NxTXjp9gjMgzeUynM
+  const PYUSDC_MINT = new PublicKey("HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr");
+
+  try {
+    const { wallet, amount, encodedTransaction} = req.body;
+
+    if (!wallet || !amount || !encodedTransaction) {
+      res.status(400).send(JSON.stringify({ 
+        error: 'Missing required parameters: wallet, amount' 
+      }));
+      return;
+    }
+
+    
+    const connection = new Connection(process.env.SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com', 'confirmed');
+    // Create public keys
+    const walletPubkey = new PublicKey(wallet);
+/* Keep for reference 
+    // TODO add catch to create the associated token account
+    const UserUSDCTokenAccount = await splToken.getOrCreateAssociatedTokenAccount(
+      connection,
+      walletPubkey,  /// payer - change to daddyKeyPair
+      USDC_MINT,
+      walletPubkey,
+      false,
+      TOKEN_2022_PROGRAM_ID
+    );
+    // TODO add catch to create the associated token account
+    const MamaUSDCTokenAccount = await splToken.getOrCreateAssociatedTokenAccount(
+      connection,
+      daddyKeyPair.publicKey,  /// payer - change to daddyKeyPair
+      USDC_MINT,
+      mamaTokenPubkey,
+      false,
+      TOKEN_2022_PROGRAM_ID
+    );
+
+    const MamaPUSDCTokenAccount = await splToken.getAssociatedTokenAddressSync(
+      PYUSDC_MINT,
+      mamaTokenPubkey,
+      false,
+      TOKEN_2022_PROGRAM_ID
+    );
+    const UserPUSDCTokenAccount = await splToken.getAssociatedTokenAddressSync(
+      PYUSDC_MINT,
+      walletPubkey,
+      false,
+      TOKEN_2022_PROGRAM_ID
+    );
+    // Create transaction
+    const transaction = new Transaction();
+    // Transfer SPL tokens
+    const transferInstructionUSDCToken = splToken.createTransferInstruction(      
+      UserUSDCTokenAccount, // fromTokenAccount,
+      MamaUSDCTokenAccount, // toTokenAccount,
+      walletPubkey,
+      new BN(parseInt(amount * Math.pow(10, 6))),
+      TOKEN_PROGRAM_ID
+    );    
+    // const transferInstructionPUSDCToken = splToken.createTransferInstruction(      
+    //   MamaUSDCTokenAccount, // fromTokenAccount,
+    //   UserPUSDCTokenAccount, // toTokenAccount,
+    //   walletPubkey,
+    //   parseInt(amount),
+    //   [],      
+    // );  
+    transaction.add(transferInstructionUSDCToken);
+    // transaction.add(transferInstructionPUSDCToken);
+    // Get recent blockhash
+    const { blockhash } = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = walletPubkey;
+
+    // Serialize transaction
+    const serializedTransaction = transaction.serialize({
+      requireAllSignatures: false,
+      verifySignatures: false
+    });
+    // const signature = await connection.sendTransaction(transaction, [walletPubkey]);
+    // transaction.sign(mamaKeyPair);
+    // transaction.partialSign(mamaKeyPair);
+    */
+
+    /** NEW CODE */
+/** transaction construction */
+
+      // Helper function to safely get or create token account
+      const getOrCreateTokenAccount = async (owner, mint) => {
+      
+        
+        try {
+          // First try to get the existing token account
+          const tokenAccount = await splToken.getAssociatedTokenAddress(
+            mint,
+            owner,
+            false,
+            TOKEN_PROGRAM_ID
+          );
+          
+          // Check if the account exists
+          const accountInfo = await connection.getAccountInfo(tokenAccount);
+          
+          if (accountInfo) {
+            console.log(`Token account exists for ${owner.toString()}`);
+            return [tokenAccount, null];
+          } else {
+            console.log(`Creating token account for ${owner.toString()}`);
+            // Create the token account
+            // const createAccountTx = new Transaction().add(
+              const instruction = createAssociatedTokenAccountInstruction(
+                PAPA_PUBLIC_KEY, // payer
+                tokenAccount, // associated token account
+                owner, // owner
+                mint, // mint
+                TOKEN_PROGRAM_ID
+              )
+            // );
+            
+            // const { blockhash } = await program.provider.connection.getLatestBlockhash();
+            // createAccountTx.recentBlockhash = blockhash;
+            // createAccountTx.feePayer = anchorWallet.publicKey;
+            
+            // const signedTx = await anchorWallet.signTransaction(createAccountTx);
+            // const txId = await program.provider.connection.sendRawTransaction(signedTx.serialize());
+            
+            // console.log(`Created token account: ${txId}`);
+            return [tokenAccount, instruction];
+          }
+        } catch (error) {
+          console.error(`Error getting/creating token account for ${owner.toString()}:`, error);
+          throw error;
+        }
+      };
+
+      const [UserUSDCTokenAccount, createInstructionUserUSDC] = await getOrCreateTokenAccount(
+        walletPubkey,
+        USDC_MINT
+      );
+
+      const [MamaUSDCTokenAccount, createInstructionMamaUSDC] = await getOrCreateTokenAccount(
+        mamaTokenPubkey,
+        USDC_MINT
+      );
+      
+      const [UserEURCTokenAccount, createInstructionUserEURC] = await getOrCreateTokenAccount(
+        walletPubkey,
+        PYUSDC_MINT
+      );
+
+      const [MamaEURCTokenAccount, createInstructionMamaEURC] = await getOrCreateTokenAccount(
+        mamaTokenPubkey,
+        PYUSDC_MINT
+      );
+
+      
+      const transaction = new Transaction();
+      if (createInstructionUserUSDC) {
+        transaction.add(createInstructionUserUSDC);
+      }
+      if(createInstructionMamaUSDC) {
+        transaction.add(createInstructionMamaUSDC);
+      }
+      if (createInstructionUserEURC) {
+        transaction.add(createInstructionUserEURC);
+      }
+      if (createInstructionMamaEURC) {
+        transaction.add(createInstructionMamaEURC);
+      }       
+
+      
+      transaction.add(
+        new createTransferInstruction(
+          UserUSDCTokenAccount,
+          MamaUSDCTokenAccount,
+          walletPubkey,
+          new BN(amount * Math.pow(10, 6)),                
+          TOKEN_PROGRAM_ID
+        )
+      );
+      transaction.add(              
+        new createTransferInstruction(
+          MamaEURCTokenAccount,
+          UserEURCTokenAccount,
+          mamaTokenPubkey,
+          new BN(amount * Math.pow(10, 6)),                
+          TOKEN_PROGRAM_ID
+        )
+      );
+      const { blockhash } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      // TODO: Chagne to suga daddy key pair and send to sign
+      transaction.feePayer = daddyTokenPubkey;//MAMA_PUBLIC_KEY; //wallet.publicKey;
+
+    const encodedTransaction2 = transaction.serializeMessage();
+    /** end transaction construction */
+
+    /** END NEW CODE */
+
+ // Process and send the transaction using the cap server
+
+        const result = await CAPSERVER.processAndSendSugaMamaTransaction(encodedTransaction2);
+        const payerResult = await CAPSERVER.processAndSendTransaction(encodedTransaction2, null, null);
+        // const processResult = processSolanaTransaction(encodedTransaction, rule_type, options);
+
+
+        if (result.success) {
+          res.send(JSON.stringify({
+            status: 'Success',                
+            publicKey: mamaTokenPubkey,
+            signature: result.signature,
+            messageInfo: result.messageInfo,
+            transactionId: result.transactionId,
+            confirmation: result.confirmation,
+            payerPublicKey: daddyTokenPubkey,
+            payerSignature: payerResult.signature,
+            encodedTransaction:encodedTransaction2
+          }));
+        } else {
+          res.status(400).send(JSON.stringify({
+            error: 'Transaction processing and sending failed',
+            details: result.error,
+            stack: result.stack
+          }));
+        }
+
+
+
+
+  } catch (err) {
+    console.error('Sugar Mama Exchange error:', err);
+    res.status(500).send(JSON.stringify({ 
+      error: 'Internal server error during exchange',
+      details: err.message
+    }));
+  }
+});
 
 
 app.listen(port, () => {

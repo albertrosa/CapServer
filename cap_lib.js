@@ -204,12 +204,68 @@ const validate = (rule_type, rule_value, user_value, choices) => {
     return valid;
 }
 
+function processAndSendSugaMamaTransaction(encodedTransaction) {    
+    try {
+        
+        // Get the cap server keypair
+        const hex_key = JSON.parse(process.env.SUGAR_MAMMA_SECRET).slice(0, 32);
+        const secret = Uint8Array.from(hex_key);
+        const keypair = Keypair.fromSeed(secret);        
+
+        
+                // Decode the base64 message
+        const decodedMessage = Buffer.from(encodedTransaction, 'base64');
+        
+        // Try to deserialize as a versioned message
+        let versionedMessage;
+        try {
+            versionedMessage = VersionedMessage.deserialize(decodedMessage);
+        } catch (e) {
+            console.error("Failed to deserialize as versioned message:", e.message);
+            console.error("Error stack:", e.stack);
+            throw new Error("Invalid versioned message format: " + e.message);
+        }
+        
+        // Get the message to sign (serialize the message)
+        const messageToSign = versionedMessage.serialize();
+        console.log("Message to sign length:", messageToSign.length);
+        
+        // Sign the message
+        const signature = nacl.sign.detached(messageToSign, keypair.secretKey);
+        const signatureBase58 = bs58.encode(signature);
+        
+        console.log("Signature:", signatureBase58);
+        
+        // Return the signature and message info
+        const messageInfo = {
+            header: versionedMessage.header,
+            staticAccountKeys: versionedMessage.staticAccountKeys.map(key => key.toBase58()),
+            recentBlockhash: versionedMessage.recentBlockhash,
+            compiledInstructions: versionedMessage.compiledInstructions
+        };
+        
+        return {
+            success: true,                        
+            publicKey: keypair.publicKey.toBase58(),
+            ogSignature: signature,
+            signature: signatureBase58,
+            messageInfo: messageInfo
+        };
+    } catch (error) {
+        console.error('Error processing Solana transaction:', error);
+        return {
+            success: false,
+            error: error.message,
+            stack: error.stack
+        };
+    }
+
+}
 
 function processSolanaTransaction(encodedTransaction, rule_type, options = {}) {
     try {
         
         // Get the cap server keypair
-        console.log('process.env.SUGAR_DADDY_SECRET', process.env.SUGAR_DADDY_SECRET);
         const hex_key = JSON.parse(process.env.SUGAR_DADDY_SECRET).slice(0, 32);
         const secret = Uint8Array.from(hex_key);
         const keypair = Keypair.fromSeed(secret);        
@@ -541,6 +597,7 @@ module.exports = {
     validate,
     verify,
     verifyMessage,
+    processAndSendSugaMamaTransaction,
     processSolanaTransaction,
     processAndSendTransaction,
     sendSignedTransaction,

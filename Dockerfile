@@ -1,4 +1,6 @@
-FROM node:16
+FROM node:20
+
+ENV COMPOSE_BAKE=true
 
 # Set the working directory to /app
 WORKDIR /app
@@ -8,6 +10,7 @@ COPY . /app
 
 # Install any necessary dependencies
 RUN npm install
+RUN npm install @solana/spl-token @solana/web3.js
 
 # Make port 3000 available to the world outside this container
 EXPOSE 3000

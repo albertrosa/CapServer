@@ -1,2 +1,8 @@
 .env
 node_modules
+test/node_modules
+test/coverage
+.git
+.gitignore
+README
+*.log
