@@ -810,7 +810,7 @@ app.post('/sug-mama-exchange', async function (req, res) {
   const PYUSDC_MINT = new PublicKey("2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo");
   //Devnet: TOKEN_PROGRAM_ID
   //mainnet: TOKEN_2022_PROGRAM_ID
-  const PYUSD_PROGID = TOKEN_PROGRAM_ID
+  const PYUSD_PROGID = TOKEN_2022_PROGRAM_ID
 
   try {
     const { wallet, amount} = req.body;
@@ -896,21 +896,27 @@ app.post('/sug-mama-exchange', async function (req, res) {
         transaction.add(createInstructionMamaEURC);
       }     
       transaction.add(
-        new createTransferInstruction(
+        createTransferCheckedInstruction(
           UserUSDCTokenAccount,
+          USDC_MINT,
           MamaUSDCTokenAccount,
           walletPubkey,
-          new BN(amount * Math.pow(10, 6)),                
+          amount * Math.pow(10, 6),
+          6, // USDC decimals
+          [],
           TOKEN_PROGRAM_ID
         )
       );
       transaction.add(              
-        new createTransferInstruction(
+        createTransferCheckedInstruction(
           MamaEURCTokenAccount,
+          PYUSDC_MINT,
           UserEURCTokenAccount,
           mamaTokenPubkey,
-          new BN(amount * Math.pow(10, 6)),                
-          PYUSD_PROGID
+          amount * Math.pow(10, 6),
+          6, // PYUSDC decimals
+          [],
+          TOKEN_2022_PROGRAM_ID
         )
       );
       const { blockhash } = await connection.getLatestBlockhash();
