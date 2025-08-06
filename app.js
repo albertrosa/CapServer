@@ -802,11 +802,11 @@ app.post('/sug-mama-exchange', async function (req, res) {
   const daddyTokenPubkey = daddyKeyPair.publicKey;
 
   //Devnet 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
-  //mainnet: 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
-  const USDC_MINT = new PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
+  //mainnet: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+  const USDC_MINT = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
   //Devnet: HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr
-  //mainnet:  CXk2AMBfi3TwaEL2468s6zP8xq9NxTXjp9gjMgzeUynM
-  const PYUSDC_MINT = new PublicKey("HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr");
+  //mainnet:  2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo
+  const PYUSDC_MINT = new PublicKey("2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo");
 
   try {
     const { wallet, amount, encodedTransaction} = req.body;
@@ -892,7 +892,7 @@ app.post('/sug-mama-exchange', async function (req, res) {
 /** transaction construction */
 
       // Helper function to safely get or create token account
-      const getOrCreateTokenAccount = async (owner, mint) => {
+      const getOrCreateTokenAccount = async (owner, mint, tokenProgramId=TOKEN_PROGRAM_ID) => {
       
         
         try {
@@ -901,7 +901,7 @@ app.post('/sug-mama-exchange', async function (req, res) {
             mint,
             owner,
             false,
-            TOKEN_PROGRAM_ID
+            tokenProgramId
           );
           
           // Check if the account exists
@@ -915,11 +915,11 @@ app.post('/sug-mama-exchange', async function (req, res) {
             // Create the token account
             // const createAccountTx = new Transaction().add(
               const instruction = createAssociatedTokenAccountInstruction(
-                PAPA_PUBLIC_KEY, // payer
+                daddyTokenPubkey, // payer
                 tokenAccount, // associated token account
                 owner, // owner
                 mint, // mint
-                TOKEN_PROGRAM_ID
+                tokenProgramId
               )
             // );
             
@@ -951,12 +951,14 @@ app.post('/sug-mama-exchange', async function (req, res) {
       
       const [UserEURCTokenAccount, createInstructionUserEURC] = await getOrCreateTokenAccount(
         walletPubkey,
-        PYUSDC_MINT
+        PYUSDC_MINT,
+        TOKEN_2022_PROGRAM_ID
       );
 
       const [MamaEURCTokenAccount, createInstructionMamaEURC] = await getOrCreateTokenAccount(
         mamaTokenPubkey,
-        PYUSDC_MINT
+        PYUSDC_MINT,
+        TOKEN_2022_PROGRAM_ID
       );
 
       
@@ -990,7 +992,7 @@ app.post('/sug-mama-exchange', async function (req, res) {
           UserEURCTokenAccount,
           mamaTokenPubkey,
           new BN(amount * Math.pow(10, 6)),                
-          TOKEN_PROGRAM_ID
+          TOKEN_2022_PROGRAM_ID
         )
       );
       const { blockhash } = await connection.getLatestBlockhash();
