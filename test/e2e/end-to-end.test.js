@@ -3,10 +3,16 @@ const express = require('express');
 
 // Mock all external dependencies for E2E tests
 jest.mock('@solana/web3.js', () => ({
-  Keypair: jest.fn(() => ({
-    publicKey: { toBase58: jest.fn(() => 'test_public_key') },
-    secretKey: new Uint8Array(32)
-  })),
+  Keypair: {
+    ...jest.fn(() => ({
+      publicKey: { toBase58: jest.fn(() => 'test_public_key') },
+      secretKey: new Uint8Array(32)
+    })),
+    fromSeed: jest.fn(() => ({
+      publicKey: { toBase58: jest.fn(() => 'test_public_key') },
+      secretKey: new Uint8Array(32)
+    }))
+  },
   Transaction: jest.fn(),
   PublicKey: jest.fn(),
   VersionedTransaction: jest.fn(),
@@ -63,7 +69,7 @@ jest.mock('axios', () => ({
   post: jest.fn(() => Promise.resolve({ data: { success: true } }))
 }));
 
-jest.mock('../config/database', () => ({
+jest.mock('../../config/database', () => ({
   pool: {
     query: jest.fn(() => Promise.resolve([{ id: 1, data: 'test' }])),
     end: jest.fn()
@@ -71,7 +77,8 @@ jest.mock('../config/database', () => ({
   sessionStore: {
     get: jest.fn(),
     set: jest.fn(),
-    destroy: jest.fn()
+    destroy: jest.fn(),
+    on: jest.fn()
   }
 }));
 
@@ -82,7 +89,7 @@ process.env.X_BEARER_TOKEN = 'test_bearer_token';
 process.env.BEEF_URI = 'http://localhost:3000';
 
 // Import the app after mocking
-const app = require('../app');
+const app = require('../../app');
 
 describe('End-to-End Tests', () => {
   beforeEach(() => {

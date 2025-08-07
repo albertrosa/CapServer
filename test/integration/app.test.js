@@ -2,7 +2,7 @@ const request = require('supertest');
 const express = require('express');
 
 // Mock the database and external dependencies
-jest.mock('../config/database', () => ({
+jest.mock('../../config/database', () => ({
   pool: {
     query: jest.fn(),
     end: jest.fn()
@@ -10,11 +10,12 @@ jest.mock('../config/database', () => ({
   sessionStore: {
     get: jest.fn(),
     set: jest.fn(),
-    destroy: jest.fn()
+    destroy: jest.fn(),
+    on: jest.fn()
   }
 }));
 
-jest.mock('../routes/twitter', () => ({
+jest.mock('../../routes/twitter', () => ({
   twitterLogInHandler: jest.fn((req, res) => res.status(200).json({ message: 'Login handler' })),
   twitterLoginCallbackHandler: jest.fn((req, res) => res.status(200).json({ message: 'Callback handler' })),
   twitterRevokeHandler: jest.fn((req, res) => res.status(200).json({ message: 'Revoke handler' })),
@@ -24,13 +25,13 @@ jest.mock('../routes/twitter', () => ({
   twitterPostSearchHandler: jest.fn((req, res) => res.status(200).json({ message: 'Post search handler' }))
 }));
 
-jest.mock('../routes/meta', () => ({
+jest.mock('../../routes/meta', () => ({
   metaLookUpHandler: jest.fn((req, res) => res.status(200).json({ message: 'Meta lookup handler' })),
   metaSaveHandler: jest.fn((req, res) => res.status(200).json({ message: 'Meta save handler' })),
   metaDeleteHandler: jest.fn((req, res) => res.status(200).json({ message: 'Meta delete handler' }))
 }));
 
-jest.mock('../routes/validator', () => ({
+jest.mock('../../routes/validator', () => ({
   verifyHandler: jest.fn((req, res) => res.status(200).json({ message: 'Verify handler' }))
 }));
 
@@ -43,10 +44,10 @@ const mockCAPSERVER = {
   sendVersionedMessage: jest.fn()
 };
 
-jest.mock('../cap_lib', () => mockCAPSERVER);
+jest.mock('../../cap_lib', () => mockCAPSERVER);
 
 // Import the app after mocking
-const app = require('../app');
+const app = require('../../app');
 
 describe('App - Integration Tests', () => {
   beforeEach(() => {

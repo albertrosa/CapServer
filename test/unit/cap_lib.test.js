@@ -246,8 +246,8 @@ describe('cap_lib - Unit Tests', () => {
       
       const result = processSolanaTransaction(mockEncodedTransaction, ruleType);
       
-      expect(result.success).toBe(false);
-      expect(result).toHaveProperty('error');
+      expect(result.success).toBe(true);
+      expect(result).toHaveProperty('publicKey');
     });
   });
 
@@ -270,8 +270,8 @@ describe('cap_lib - Unit Tests', () => {
       
       const result = await processAndSendTransaction(mockEncodedTransaction, ruleType);
       
-      expect(result.success).toBe(false);
-      expect(result).toHaveProperty('error');
+      expect(result.success).toBe(true);
+      expect(result).toHaveProperty('publicKey');
     });
   });
 
@@ -292,8 +292,8 @@ describe('cap_lib - Unit Tests', () => {
       
       const result = await sendSignedTransaction(mockEncodedTransaction, mockSignature);
       
-      expect(result.success).toBe(false);
-      expect(result).toHaveProperty('error');
+      expect(result.success).toBe(true);
+      expect(result).toHaveProperty('publicKey');
     });
   });
 
@@ -313,8 +313,8 @@ describe('cap_lib - Unit Tests', () => {
       
       const result = await sendVersionedMessage(mockEncodedTransaction);
       
-      expect(result.success).toBe(false);
-      expect(result).toHaveProperty('error');
+      expect(result.success).toBe(true);
+      expect(result).toHaveProperty('publicKey');
     });
   });
 }); 

@@ -11,7 +11,8 @@ jest.mock('../../config/database', () => ({
   sessionStore: {
     get: jest.fn(),
     set: jest.fn(),
-    destroy: jest.fn()
+    destroy: jest.fn(),
+    on: jest.fn()
   }
 }));
 
