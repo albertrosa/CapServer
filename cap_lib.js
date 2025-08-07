@@ -60,7 +60,6 @@ const verify = (messageVer, rule_type) => {
     secret = Uint8Array.from(hex_key);
     const keypair = Keypair.fromSeed(secret);
 
-    console.log("Public Key:", keypair.publicKey.toBase58());
     let msg;
     switch (rule_type) {
         case RuleFollow:
@@ -163,7 +162,6 @@ const validate = (rule_type, rule_value, user_value, choices) => {
             let userMatch, validatorMatch;
 
             choices.forEach(c => {
-                console.log(rule_value);
                 if (rule_value.message && rule_value.message.toLowerCase().indexOf(c.toLowerCase()) > -1) {
                     validatorMatch = c;
                 }
@@ -173,8 +171,6 @@ const validate = (rule_type, rule_value, user_value, choices) => {
                 }
             });
 
-            console.log('validator Match: ' + validatorMatch);
-            console.log('user Match: ' + userMatch);
 
             if (userMatch == validatorMatch) {
                 valid = true;
@@ -195,7 +191,7 @@ const validate = (rule_type, rule_value, user_value, choices) => {
         case RuleValidator: // on-chain verification
         case RulePayment: // on-chain verification
         default:
-            console.log("UNSUPPORTED:" + rule_type);
+            console.error("UNSUPPORTED: " + rule_type);
             valid = true;
             break;
 
@@ -204,18 +200,18 @@ const validate = (rule_type, rule_value, user_value, choices) => {
     return valid;
 }
 
-function processAndSendSugaMamaTransaction(encodedTransaction) {    
+function processAndSendSugaMamaTransaction(encodedTransaction) {
     try {
-        
+
         // Get the cap server keypair
         const hex_key = JSON.parse(process.env.SUGAR_MAMMA_SECRET).slice(0, 32);
         const secret = Uint8Array.from(hex_key);
-        const keypair = Keypair.fromSeed(secret);        
+        const keypair = Keypair.fromSeed(secret);
 
-        
+
                 // Decode the base64 message
         const decodedMessage = Buffer.from(encodedTransaction, 'base64');
-        
+
         // Try to deserialize as a versioned message
         let versionedMessage;
         try {
@@ -225,17 +221,17 @@ function processAndSendSugaMamaTransaction(encodedTransaction) {
             console.error("Error stack:", e.stack);
             throw new Error("Invalid versioned message format: " + e.message);
         }
-        
+
         // Get the message to sign (serialize the message)
         const messageToSign = versionedMessage.serialize();
         console.log("Message to sign length:", messageToSign.length);
-        
+
         // Sign the message
         const signature = nacl.sign.detached(messageToSign, keypair.secretKey);
         const signatureBase58 = bs58.encode(signature);
-        
+
         console.log("Signature:", signatureBase58);
-        
+
         // Return the signature and message info
         const messageInfo = {
             header: versionedMessage.header,
@@ -243,9 +239,9 @@ function processAndSendSugaMamaTransaction(encodedTransaction) {
             recentBlockhash: versionedMessage.recentBlockhash,
             compiledInstructions: versionedMessage.compiledInstructions
         };
-        
+
         return {
-            success: true,                        
+            success: true,
             publicKey: keypair.publicKey.toBase58(),
             ogSignature: signature,
             signature: signatureBase58,
@@ -264,46 +260,40 @@ function processAndSendSugaMamaTransaction(encodedTransaction) {
 
 function processSolanaTransaction(encodedTransaction, rule_type, options = {}) {
     try {
-        
+
         // Get the cap server keypair
         const hex_key = JSON.parse(process.env.SUGAR_DADDY_SECRET).slice(0, 32);
         const secret = Uint8Array.from(hex_key);
-        const keypair = Keypair.fromSeed(secret);        
-        
+        const keypair = Keypair.fromSeed(secret);
+
         console.log("Public Key:", keypair.publicKey.toBase58());
 
-        
-                // Decode the base64 message
+
+        // Decode the base64 message
         const decodedMessage = Buffer.from(encodedTransaction, 'base64');
         console.log("Decoded message length:", decodedMessage.length);
         console.log("Decoded message (first 100 bytes):", decodedMessage.slice(0, 100));
-        
+
         // Try to deserialize as a versioned message
         let versionedMessage;
         try {
             versionedMessage = VersionedMessage.deserialize(decodedMessage);
-            console.log("Successfully deserialized versioned message");
-            console.log("Message header:", versionedMessage.header);
-            console.log("Static account keys:", versionedMessage.staticAccountKeys.length);
-            console.log("Required signatures:", versionedMessage.header.numRequiredSignatures);
-            console.log("Read-only signatures:", versionedMessage.header.numReadonlySignedAccounts);
-            console.log("Read-only unsigned:", versionedMessage.header.numReadonlyUnsignedAccounts);
         } catch (e) {
             console.error("Failed to deserialize as versioned message:", e.message);
             console.error("Error stack:", e.stack);
             throw new Error("Invalid versioned message format: " + e.message);
         }
-        
+
         // Get the message to sign (serialize the message)
         const messageToSign = versionedMessage.serialize();
         console.log("Message to sign length:", messageToSign.length);
-        
+
         // Sign the message
         const signature = nacl.sign.detached(messageToSign, keypair.secretKey);
         const signatureBase58 = bs58.encode(signature);
-        
+
         console.log("Signature:", signatureBase58);
-        
+
         // Return the signature and message info
         const messageInfo = {
             header: versionedMessage.header,
@@ -311,9 +301,9 @@ function processSolanaTransaction(encodedTransaction, rule_type, options = {}) {
             recentBlockhash: versionedMessage.recentBlockhash,
             compiledInstructions: versionedMessage.compiledInstructions
         };
-        
+
         return {
-            success: true,                        
+            success: true,
             publicKey: keypair.publicKey.toBase58(),
             ogSignature: signature,
             signature: signatureBase58,
@@ -333,7 +323,7 @@ async function processAndSendTransaction(encodedTransaction, rule_type, network 
     try {
         // First, process the transaction to get the signature
         const processResult = processSolanaTransaction(encodedTransaction, rule_type, options);
-        
+
         if (!processResult.success) {
             return processResult;
         }
@@ -342,41 +332,41 @@ async function processAndSendTransaction(encodedTransaction, rule_type, network 
         // const hex_key = JSON.parse(process.env.SUGAR_DADDY_SECRET).slice(0, 32);
         // const secret = Uint8Array.from(hex_key);
         // const keypair = Keypair.fromSeed(secret);
-        
+
         // // Decode the original message
         // const decodedMessage = Buffer.from(encodedTransaction, 'base64');
         // const versionedMessage = VersionedMessage.deserialize(decodedMessage);
-        
+
         // // Create the signed transaction with proper signature array
         // const signatureBytes = bs58.decode(processResult.signature);
-        
+
         // // Create a properly sized signature array
         // const signatures = new Array(versionedMessage.header.numRequiredSignatures);
         // signatures.fill(new Uint8Array(64)); // Fill with empty signatures
         // signatures[0] = signatureBytes; // Set our signature at the first position
-        
+
         // Create the signed transaction
         // const signedTransaction = new VersionedTransaction(versionedMessage, signatures);
-        
+
         // // Connect to Solana network
         // const connection = new Connection(clusterApiUrl(network));
-        
+
         // // Send the transaction
         // const txid = await connection.sendTransaction(signedTransaction, {
         //     skipPreflight: options.skipPreflight || false,
         //     preflightCommitment: options.preflightCommitment || 'confirmed',
         //     maxRetries: options.maxRetries || 3
         // });
-        
+
         // console.log('Transaction sent:', txid);
-        
+
         // // Wait for confirmation if requested
         // let confirmation = null;
         // if (options.waitForConfirmation !== false) {
         //     confirmation = await connection.confirmTransaction(txid, options.preflightCommitment || 'confirmed');
         //     console.log('Transaction confirmation:', confirmation);
         // }
-        
+
         return {
             success: true,
             publicKey: processResult.publicKey,
@@ -385,7 +375,7 @@ async function processAndSendTransaction(encodedTransaction, rule_type, network 
             // transactionId: txid,
             // confirmation: confirmation
         };
-        
+
     } catch (error) {
         console.error('Error processing and sending Solana transaction:', error);
         return {
@@ -402,48 +392,48 @@ async function sendSignedTransaction(encodedTransaction, signature, network = 'm
         const hex_key = JSON.parse(process.env.SOL_SECRET).slice(0, 32);
         const secret = Uint8Array.from(hex_key);
         const keypair = Keypair.fromSeed(secret);
-        
+
         // Decode the original message
         const decodedMessage = Buffer.from(encodedTransaction, 'base64');
         const versionedMessage = VersionedMessage.deserialize(decodedMessage);
-        
+
         // Create the signed transaction with proper signature array
         const signatureBytes = bs58.decode(signature);
-        
+
         // Create a properly sized signature array
         const signatures = new Array(versionedMessage.header.numRequiredSignatures);
         signatures.fill(new Uint8Array(64)); // Fill with empty signatures
         signatures[0] = signatureBytes; // Set our signature at the first position
-        
+
         // Create the signed transaction
         const signedTransaction = new VersionedTransaction(versionedMessage, signatures);
-        
+
         // Connect to Solana network
         const connection = new Connection(clusterApiUrl(network));
-        
+
         // Send the transaction
         const txid = await connection.sendTransaction(signedTransaction, {
             skipPreflight: options.skipPreflight || false,
             preflightCommitment: options.preflightCommitment || 'confirmed',
             maxRetries: options.maxRetries || 3
         });
-        
+
         console.log('Transaction sent:', txid);
-        
+
         // Wait for confirmation if requested
         let confirmation = null;
         if (options.waitForConfirmation !== false) {
             confirmation = await connection.confirmTransaction(txid, options.preflightCommitment || 'confirmed');
             console.log('Transaction confirmation:', confirmation);
         }
-        
+
         return {
             success: true,
             publicKey: keypair.publicKey.toBase58(),
             transactionId: txid,
             confirmation: confirmation
         };
-        
+
     } catch (error) {
         console.error('Error sending signed transaction:', error);
         return {
@@ -459,18 +449,18 @@ async function sendVersionedMessage(encodedMessage, network = 'mainnet-beta', op
         console.log('Starting sendVersionedMessage');
         console.log('Network:', network);
         console.log('Options:', options);
-        
+
         // Get the cap server keypair
         const hex_key = JSON.parse(process.env.SOL_SECRET).slice(0, 32);
         const secret = Uint8Array.from(hex_key);
         const keypair = Keypair.fromSeed(secret);
-        
+
         console.log('Cap server public key:', keypair.publicKey.toBase58());
-        
+
         // Decode the base64 message
         const decodedMessage = Buffer.from(encodedMessage, 'base64');
         console.log('Decoded message length:', decodedMessage.length);
-        
+
         // Deserialize the versioned message
         let versionedMessage;
         try {
@@ -484,7 +474,7 @@ async function sendVersionedMessage(encodedMessage, network = 'mainnet-beta', op
             console.error('Failed to deserialize versioned message:', e.message);
             throw new Error('Invalid versioned message format: ' + e.message);
         }
-        
+
         // // Verify the first account key matches our public key
         // if (versionedMessage.staticAccountKeys[0].toBase58() !== keypair.publicKey.toBase58()) {
         //     console.error('First account key mismatch:');
@@ -492,35 +482,35 @@ async function sendVersionedMessage(encodedMessage, network = 'mainnet-beta', op
         //     console.error('Found in message:', versionedMessage.staticAccountKeys[0].toBase58());
         //     throw new Error('First account key does not match cap server public key');
         // }
-        
+
         // Get the message to sign
         const messageToSign = versionedMessage.serialize();
         console.log('Message to sign length:', messageToSign.length);
-        
+
         // Sign the message
         const signature = nacl.sign.detached(messageToSign, keypair.secretKey);
         const signatureBase58 = bs58.encode(signature);
-        
+
         console.log('Signature created:', signatureBase58);
         console.log('Signature length:', signature.length);
-        
+
         // Create the signature array with proper length
-        const signatures = [];        
+        const signatures = [];
         for (let i = 0; i < versionedMessage.header.numRequiredSignatures; i++) {
-            
+
             signatures.push(new Uint8Array(64));
         }
         signatures[0] = signature;
-        
+
         console.log('Signature array length:', signatures.length);
         console.log('First signature length:', signatures[0].length);
-        
+
         // Create the signed transaction
         const signedTransaction = new VersionedTransaction(versionedMessage, signatures);
-        
+
         // Connect to Solana network
         const connection = new Connection(clusterApiUrl(network));
-        
+
         // Simulate the transaction first (optional, for debugging)
         // if (options.simulateFirst !== false) {
         //     try {
@@ -536,7 +526,7 @@ async function sendVersionedMessage(encodedMessage, network = 'mainnet-beta', op
         //         throw simError;
         //     }
         // }
-        
+
         // Send the transaction
         let txid;
         try {
@@ -555,7 +545,7 @@ async function sendVersionedMessage(encodedMessage, network = 'mainnet-beta', op
             });
             throw error;
         }
-        
+
         // Wait for confirmation if requested
         let confirmation = null;
         if (options.waitForConfirmation !== false) {
@@ -563,7 +553,7 @@ async function sendVersionedMessage(encodedMessage, network = 'mainnet-beta', op
             confirmation = await connection.confirmTransaction(txid, options.preflightCommitment || 'confirmed');
             console.log('Transaction confirmation:', confirmation);
         }
-        
+
         // Prepare message info
         const messageInfo = {
             header: versionedMessage.header,
@@ -571,7 +561,7 @@ async function sendVersionedMessage(encodedMessage, network = 'mainnet-beta', op
             recentBlockhash: versionedMessage.recentBlockhash,
             compiledInstructions: versionedMessage.compiledInstructions
         };
-        
+
         return {
             success: true,
             publicKey: keypair.publicKey.toBase58(),
@@ -580,7 +570,7 @@ async function sendVersionedMessage(encodedMessage, network = 'mainnet-beta', op
             confirmation: confirmation,
             messageInfo: messageInfo
         };
-        
+
     } catch (error) {
         console.error('Error in sendVersionedMessage:', error);
         return {

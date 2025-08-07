@@ -4,17 +4,25 @@
   "description": "Oracle For CAPATAINFUN",
   "main": "app.js",
   "scripts": {
-    "test": "test",
-    "build": "echo 'built'"
+    "test": "cd test && npm test",
+    "test:unit": "cd test && npm run test:unit",
+    "test:integration": "cd test && npm run test:integration",
+    "test:e2e": "cd test && npm run test:e2e",
+    "test:coverage": "cd test && npm run test:coverage",
+    "test:watch": "cd test && npm run test:watch",
+    "build": "echo 'built'",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "author": "Albert Rosa",
   "license": "ISC",
-  "dependencies": {    
+  "dependencies": {
     "@solana/spl-token": "^0.4.13",
     "@solana/web3.js": "^1.98.2",
     "axios": "^1.7.7",
     "cors": "^2.8.5",
-    "crypto": "^1.0.1",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "express-mysql-session": "^3.0.3",
