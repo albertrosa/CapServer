@@ -17,6 +17,7 @@ COPY . /app
 
 # Install any necessary dependencies
 RUN npm install
+RUN npm install @solana/spl-token @solana/web3.js
 
 # Make port 3000 available to the world outside this container
 EXPOSE 3000
