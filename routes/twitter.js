@@ -33,7 +33,7 @@ const performUserSearch = async (users, useSession = true) => {
             return JSON.stringify(searchResponse.data);
         }
     } else {
-        // Single Username flow        
+        // Single Username flow
         const searchResponse = await axios.get("https://api.x.com/2/users/by/username/" + users
             + "?" + userSearchFields
             , {
@@ -78,14 +78,15 @@ const getXUserData = async (accessToken, req) => {
 
 
 const handleXAPIErrors = (XAPIResponseCode) => {
-    switch (XAPIResponseCode.status) {
+    const status = XAPIResponseCode.response?.status || XAPIResponseCode.status;
+    switch (status) {
         case 401:
-            return { error: 'Authenticate', login: 1, code: XAPIResponseCode.status, data: XAPIResponseCode }
+            return { error: 'Authenticate', login: 1, code: status, data: XAPIResponseCode }
         case 429:
-            return { error: 'Too Many Request', login: 0, code: XAPIResponseCode.status, data: XAPIResponseCode }
+            return { error: 'Too Many Request', login: 0, code: status, data: XAPIResponseCode }
         default:
             console.log(XAPIResponseCode);
-            return { error: 'X SEARCH ERROR', login: 0, code: XAPIResponseCode.status, data: XAPIResponseCode }
+            return { error: 'X SEARCH ERROR', login: 0, code: status, data: XAPIResponseCode }
     }
 
 }
@@ -122,20 +123,20 @@ const twitterLoginCallbackHandler = async (req, res) => {
             res.send(`
         <html>
         <body>
-          <p>Redirection to App</p>        
+          <p>Redirection to App</p>
           <h1><a href="${beefDap}/t/?i=${dat}">Not Redirected<a/></h1>
-          
+
           <script>
             // Pass the access token and status to the parent window
             window.location.href="${beefDap}/t/?i=${dat}";
-            
+
 
             // Close the window after a delay
             setTimeout(() => {
               try {
-                window.location.href="${beefDap}/t/?i=${dat}";            
+                window.location.href="${beefDap}/t/?i=${dat}";
               } catch(err) {
-                
+
               }
             }, 3000); // 3 seconds delay
           </script>
@@ -146,19 +147,19 @@ const twitterLoginCallbackHandler = async (req, res) => {
             res.send(`
         <html>
         <body>
-          <p>You have been authenticated with this platform. You can close the window now.</p>        
+          <p>You have been authenticated with this platform. You can close the window now.</p>
           <script>
             // Pass the access token and status to the parent window
             try {
               window.opener.postMessage(
-              { token: ${JSON.stringify(accessToken)}, 
+              { token: ${JSON.stringify(accessToken)},
               user: ${JSON.stringify(tmp)},
               status: "Login successful" }, "*");
             } catch(err) {
               window.location.href="${beefDap}/t/?i=${dat}";
             }
 
-            try {              
+            try {
               window.close();
             } catch(err) {
               window.location.href="${beefDap}/t/?i=${dat}";
@@ -168,10 +169,10 @@ const twitterLoginCallbackHandler = async (req, res) => {
 
             // Close the window after a delay
             setTimeout(() => {
-              try {                
+              try {
                 window.close();
               } catch(err) {
-                
+
             window.location.href="${beefDap}/t/?i=${dat}";
               }
             }, 3000); // 3 seconds delay
@@ -201,7 +202,7 @@ const twitterRecentSearchHandler = async (req, res) => {
     const { xt, search, start, end } = req.query;
 
     if ((req.session.at || xt) && req.session[generateMD5Hash(search)] == null) {
-        //  v2 Auth Pattern         
+        //  v2 Auth Pattern
         const timeRange = (start ? '&' + start : '') + (end ? '&' + end : '');
         const searchResponse = await axios.get("https://api.x.com/2/tweets/search/recent?query=" + search + timeRange + "&tweet.fields=created_at&expansions=author_id&max_results=100&" + userSearchFields, {
             headers: {
@@ -237,7 +238,7 @@ const twitterSearchHandler = async (req, res) => {
     if ((req.session.at || xt) && req.session[generateMD5Hash(search)] == null) {
 
 
-        //  v2 Auth Pattern         
+        //  v2 Auth Pattern
         const timeRange = (start ? '&' + start : '') + (end ? '&' + end : '');
         const searchResponse = await axios.get("https://api.x.com/2/tweets/search/all?query=" + search + timeRange + "&tweet.fields=created_at&expansions=author_id&max_results=100&" + userSearchFields, {
             headers: {
