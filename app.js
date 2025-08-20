@@ -813,7 +813,7 @@ app.post('/sug-mama-exchange', async function (req, res) {
   const PYUSD_PROGID = TOKEN_2022_PROGRAM_ID
 
   try {
-    const { wallet, amount, payoutWallet} = req.body;
+    const { wallet, amount, payoutWallet, pyusdc} = req.body;
 
     if (!wallet || !amount || !payoutWallet) {
       res.status(400).send(JSON.stringify({ 
@@ -871,13 +871,19 @@ app.post('/sug-mama-exchange', async function (req, res) {
         USDC_MINT
       );
       
-      const [UserEURCTokenAccount, createInstructionUserEURC] = await getOrCreateTokenAccount(
+      const [UserPYUSDCTokenAccount, createInstructionUserPYUSDC] = await getOrCreateTokenAccount(
         payoutPubkey,
         PYUSDC_MINT,
         PYUSD_PROGID
       );
 
-      const [MamaEURCTokenAccount, createInstructionMamaEURC] = await getOrCreateTokenAccount(
+      
+      const [UserUSDCPayoutTokenAccount, createInstructionUserUSDCPayout] = await getOrCreateTokenAccount(
+        payoutPubkey,
+        USDC_MINT
+      );
+
+      const [MamaPYUSDCTokenAccount, createInstructionMamaPYUSDC] = await getOrCreateTokenAccount(
         mamaTokenPubkey,
         PYUSDC_MINT,
         PYUSD_PROGID
@@ -890,12 +896,18 @@ app.post('/sug-mama-exchange', async function (req, res) {
       if(createInstructionMamaUSDC) {
         transaction.add(createInstructionMamaUSDC);
       }
-      if (createInstructionUserEURC) {
-        transaction.add(createInstructionUserEURC);
+      if (createInstructionUserPYUSDC) {
+        transaction.add(createInstructionUserPYUSDC);
       }
-      if (createInstructionMamaEURC) {
-        transaction.add(createInstructionMamaEURC);
-      }     
+      if (createInstructionMamaPYUSDC) {
+        transaction.add(createInstructionMamaPYUSDC);
+      }  
+      if(createInstructionUserUSDCPayout) {
+        transaction.add(createInstructionUserUSDCPayout);
+      }
+      
+
+
       transaction.add(
         createTransferCheckedInstruction(
           UserUSDCTokenAccount,
@@ -908,18 +920,37 @@ app.post('/sug-mama-exchange', async function (req, res) {
           TOKEN_PROGRAM_ID
         )
       );
-      transaction.add(              
-        createTransferCheckedInstruction(
-          MamaEURCTokenAccount,
-          PYUSDC_MINT,
-          UserEURCTokenAccount,
-          mamaTokenPubkey,
-          amount * Math.pow(10, 6),
-          6, // PYUSDC decimals
-          [],
-          PYUSD_PROGID
-        )
-      );
+      if(pyusdc !== 0){
+        transaction.add(              
+          createTransferCheckedInstruction(
+            MamaPYUSDCTokenAccount,
+            PYUSDC_MINT,
+            UserPYUSDCTokenAccount,
+            mamaTokenPubkey,
+            amount * Math.pow(10, 6),
+            6, // PYUSDC decimals
+            [],
+            PYUSD_PROGID
+          )
+        );
+      } else {
+        // this portion will be used to send the USDC to the user
+        transaction.add(
+          createTransferCheckedInstruction(
+            MamaUSDCTokenAccount,
+            USDC_MINT,
+            UserUSDCPayoutTokenAccount,
+            payoutPubkey,
+            amount * Math.pow(10, 6),
+            6, // USDC decimals
+            [],
+            TOKEN_PROGRAM_ID
+          )
+        );
+      }
+
+
+
       const { blockhash } = await connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = daddyTokenPubkey;
