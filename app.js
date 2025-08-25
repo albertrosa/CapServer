@@ -940,7 +940,7 @@ app.post('/sug-mama-exchange', async function (req, res) {
             MamaUSDCTokenAccount,
             USDC_MINT,
             UserUSDCPayoutTokenAccount,
-            payoutPubkey,
+            mamaTokenPubkey,
             amount * Math.pow(10, 6),
             6, // USDC decimals
             [],
