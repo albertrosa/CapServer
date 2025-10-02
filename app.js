@@ -863,7 +863,6 @@ app.post('/verify-payer', async function (req, res) {
 
 app.post('/sug-mama-exchange', async function (req, res) {
   // Parse the JSON string back to array
-  console.log("process.env.SUGAR_MAMMA_SECRET: ", process.env.SUGAR_MAMMA_SECRET);
   const mamaKeyPair = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SUGAR_MAMMA_SECRET)));
   const daddyKeyPair = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(process.env.SUGAR_DADDY_SECRET)));
   const mamaTokenPubkey = mamaKeyPair.publicKey;
