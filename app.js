@@ -653,13 +653,6 @@ app.post('/process-and-send-transaction', async function (req, res) {
   try {
     const { encodedTransaction, rule_type, network, options, wallet, email } = req.body;
 
-    if (!wallet) {
-      res.status(400).send(JSON.stringify({
-        error: 'Missing required parameters: wallet'
-      }));
-      return;
-    }
-
     if (!encodedTransaction || !rule_type) {
       res.status(400).send(JSON.stringify({
         error: 'Missing required parameters: encodedTransaction and rule_type'
@@ -667,23 +660,31 @@ app.post('/process-and-send-transaction', async function (req, res) {
       return;
     }
 
+
+
+    // if (!wallet) {
+    //   res.status(400).send(JSON.stringify({
+    //     error: 'Missing required parameters: wallet'
+    //   }));
+    //   return;
+    // }
     // todo call verify payer here
-    const verifyPayerResult = await CAPSERVER.verifyPayer(wallet, email).catch((err) => {
-      console.error('Error verifying payer:', err);
-      res.status(400).send(JSON.stringify({
-        error: 'Cannot Reach Verifier: Error verifying payer'
-      }));
-      return;
-    });
+    // const verifyPayerResult = await CAPSERVER.verifyPayer(wallet, email).catch((err) => {
+    //   console.error('Error verifying payer:', err);
+    //   res.status(400).send(JSON.stringify({
+    //     error: 'Cannot Reach Verifier: Error verifying payer'
+    //   }));
+    //   return;
+    // });
 
-    console.log('verifyPayerResult: ', verifyPayerResult);
+    // console.log('verifyPayerResult: ', verifyPayerResult);
 
-    if (!verifyPayerResult) {
-      res.status(400).send(JSON.stringify({
-        error: 'Not a verified User'
-      }));
-      return;
-    }
+    // if (!verifyPayerResult) {
+    //   res.status(400).send(JSON.stringify({
+    //     error: 'Not a verified User'
+    //   }));
+    //   return;
+    // }
 
 
 
